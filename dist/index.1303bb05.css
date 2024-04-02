@@ -1,0 +1,197 @@
+.page-container {
+  padding: 0 20px;
+}
+
+.page-header {
+  border-bottom: 1px solid #e0e0e0;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: -20px;
+  margin-right: -20px;
+  padding: 20px 16px;
+  display: flex;
+}
+
+.logo {
+  cursor: pointer;
+  width: 130px;
+  margin: 0;
+  font-size: 28px;
+}
+
+.header-container {
+  margin-bottom: 8px;
+}
+
+.header-button {
+  cursor: pointer;
+  background-color: #0000;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.logout-button {
+  text-align: right;
+  width: 130px;
+}
+
+.posts {
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+}
+
+.post-header {
+  cursor: pointer;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.post-header__user-image {
+  object-fit: cover;
+  border-radius: 40px;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.post-image-container {
+  background-color: #e0e0e0;
+  justify-content: center;
+  height: 500px;
+  margin-left: -20px;
+  margin-right: -20px;
+  display: flex;
+}
+
+.post-image {
+  object-fit: cover;
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
+}
+
+.post-likes {
+  flex-direction: row;
+  align-items: center;
+  display: flex;
+}
+
+.like-button {
+  cursor: pointer;
+  background-color: #0000;
+  border: none;
+  padding: 8px 8px 5px 0;
+}
+
+.user-name {
+  font-weight: 500;
+}
+
+.post-text {
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.post-date {
+  color: #8a8a8a;
+}
+
+.post + .post {
+  margin-top: 20px;
+}
+
+.posts-user-header {
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 12px;
+  display: flex;
+}
+
+.posts-user-header__user-image {
+  object-fit: cover;
+  border-radius: 40px;
+  width: 70px;
+  height: 70px;
+  margin-right: 10px;
+}
+
+.posts-user-header__user-name {
+  font-size: 28px;
+  line-height: 35px;
+}
+
+.loading-page {
+  justify-content: center;
+  margin-top: 100px;
+  display: flex;
+}
+
+.add-post-sign {
+  background-image: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 122.88 122.88'%3E%3Ctitle%3Eadd%3C/title%3E%3Cpath d='M61.44,0A61.46,61.46,0,1,1,18,18,61.25,61.25,0,0,1,61.44,0ZM88.6,56.82v9.24a4,4,0,0,1-4,4H70V84.62a4,4,0,0,1-4,4H56.82a4,4,0,0,1-4-4V70H38.26a4,4,0,0,1-4-4V56.82a4,4,0,0,1,4-4H52.84V38.26a4,4,0,0,1,4-4h9.24a4,4,0,0,1,4,4V52.84H84.62a4,4,0,0,1,4,4Zm8.83-31.37a50.92,50.92,0,1,0,14.9,36,50.78,50.78,0,0,0-14.9-36Z'/%3E%3C/svg%3E");
+  width: 30px;
+  height: 30px;
+}
+
+.form {
+  flex-direction: column;
+  width: 100%;
+  display: flex;
+}
+
+.form-title {
+  text-align: center;
+  font-size: 28px;
+  line-height: 35px;
+}
+
+.form-inputs {
+  flex-direction: column;
+  gap: 10px;
+  display: flex;
+}
+
+.form-error {
+  color: red;
+}
+
+.form-footer {
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 50px;
+  display: flex;
+}
+
+.form-footer-title {
+  text-align: center;
+}
+
+.file-upload-image-conrainer {
+  align-items: center;
+  display: flex;
+}
+
+.file-upload-image {
+  object-fit: cover;
+  border: 1px solid gray;
+  border-radius: 5px;
+  width: 100px;
+  height: 100px;
+  margin-right: 10px;
+}
+
+.file-upload-label {
+  box-sizing: border-box;
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+}
+/*# sourceMappingURL=index.1303bb05.css.map */

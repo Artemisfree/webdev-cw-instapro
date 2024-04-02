@@ -68,3 +68,45 @@ export function uploadImage({ file }) {
     return response.json();
   });
 }
+
+// export function addPost({ token, description, imageFile }) {
+// 	return uploadImage({ file: imageFile })
+// 		.then(uploadResponse => {
+// 			const imageUrl = uploadResponse.url
+
+// 			return fetch(postsHost, {
+// 				method: 'POST',
+// 				headers: {
+// 					'Content-Type': 'application/json',
+// 					Authorization: token,
+// 				},
+// 				body: JSON.stringify({
+// 					description,
+// 					imageUrl,
+// 				}),
+// 			})
+// 		})
+// 		.then(response => {
+// 			if (!response.ok) {
+// 				throw new Error('Ошибка при добавлении поста')
+// 			}
+// 			return response.json()
+// 		})
+// }
+export function addPost({ token, description, imageFile }) {
+	return uploadImage({ file: imageFile })
+		.then(uploadResponse => {
+			const imageUrl = uploadResponse.fileUrl
+			return fetch(`${baseHost}/`, {
+				method: 'POST',
+				headers: { authorization: `Bearer ${token}` },
+				body: JSON.stringify({ description, imageUrl }),
+			})
+		})
+		.then(response => {
+			if (!response.ok) {
+				throw new Error('Ошибка при добавлении поста')
+			}
+			return response.json()
+		})
+}

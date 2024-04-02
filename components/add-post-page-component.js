@@ -1,23 +1,56 @@
+// export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
+//   const render = () => {
+//     // TODO: Реализовать страницу добавления поста
+//     const appHtml = `
+//     <div class="page-container">
+//       <div class="header-container"></div>
+//       Cтраница добавления поста
+//       <button class="button" id="add-button">Добавить</button>
+//     </div>
+//   `;
+
+//     appEl.innerHTML = appHtml;
+
+//     document.getElementById("add-button").addEventListener("click", () => {
+//       onAddPostClick({
+//         description: "Описание картинки",
+//         imageUrl: "https://image.png",
+//       });
+//     });
+//   };
+
+//   render();
+// }
+
 export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
-  const render = () => {
-    // TODO: Реализовать страницу добавления поста
-    const appHtml = `
-    <div class="page-container">
-      <div class="header-container"></div>
-      Cтраница добавления поста
-      <button class="button" id="add-button">Добавить</button>
-    </div>
-  `;
+	const render = () => {
+		const appHtml = `
+      <div class="page-container">
+        <div class="header-container"></div>
+        <h1>Добавление нового поста</h1>
+        <form id="add-post-form">
+          <input type="text" id="description" placeholder="Описание" required />
+          <input type="file" id="imageFile" required />
+          <button type="submit" class="button">Добавить</button>
+        </form>
+      </div>
+    `
 
-    appEl.innerHTML = appHtml;
+		appEl.innerHTML = appHtml
 
-    document.getElementById("add-button").addEventListener("click", () => {
-      onAddPostClick({
-        description: "Описание картинки",
-        imageUrl: "https://image.png",
-      });
-    });
-  };
+		document
+			.getElementById('add-post-form')
+			.addEventListener('submit', event => {
+				event.preventDefault()
+				const description = document.getElementById('description').value
+				const imageFile = document.getElementById('imageFile').files[0]
 
-  render();
+				onAddPostClick({
+					description,
+					imageFile,
+				})
+			})
+	}
+
+	render()
 }
