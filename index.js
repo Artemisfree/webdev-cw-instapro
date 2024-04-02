@@ -1,4 +1,4 @@
-import { getPosts } from "./api.js";
+import { getPosts, addPost } from './api.js'
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -106,16 +106,46 @@ const renderApp = () => {
     });
   }
 
+  // if (page === ADD_POSTS_PAGE) {
+  //   return renderAddPostPageComponent({
+  //     appEl,
+  //     onAddPostClick({ description, imageUrl }) {
+  //       // TODO: реализовать добавление поста в API
+  //       console.log("Добавляю пост...", { description, imageUrl });
+  //       goToPage(POSTS_PAGE);
+  //     },
+  //   });
+  // }
   if (page === ADD_POSTS_PAGE) {
-    return renderAddPostPageComponent({
-      appEl,
-      onAddPostClick({ description, imageUrl }) {
-        // TODO: реализовать добавление поста в API
-        console.log("Добавляю пост...", { description, imageUrl });
-        goToPage(POSTS_PAGE);
-      },
-    });
-  }
+		return renderAddPostPageComponent({
+			appEl,
+			onAddPostClick({ description, imageFile }) {
+				// Показываем страницу загрузки во время обработки добавления поста
+				goToPage(LOADING_PAGE)
+				// Загрузка изображения и добавление поста
+				addPost({
+					token: getToken(),
+					description,
+					imageFile,
+				})
+					.then(() => {
+						// После успешного добавления поста, обновляем список постов и переходим на страницу с постами
+						return getPosts({ token: getToken() })
+					})
+					.then(newPosts => {
+						posts = newPosts
+            console.log('Добавляю пост...', { description, imageUrl })
+						goToPage(POSTS_PAGE)
+					})
+					.catch(error => {
+						console.error(error)
+						// В случае ошибки также переходим на страницу с постами, возможно, стоит обработать ошибку более наглядно для пользователя
+						goToPage(POSTS_PAGE)
+					})
+			},
+		})
+	}
+
 
   if (page === POSTS_PAGE) {
     return renderPostsPageComponent({
