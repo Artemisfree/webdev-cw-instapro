@@ -638,11 +638,21 @@ const goToPage = (newPage, data)=>{
             });
         }
         if (newPage === (0, _routesJs.USER_POSTS_PAGE)) {
-            // TODO: реализовать получение постов юзера из API
-            console.log("\u041E\u0442\u043A\u0440\u044B\u0432\u0430\u044E \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: ", data.userId);
-            page = (0, _routesJs.USER_POSTS_PAGE);
-            posts = [];
-            return renderApp();
+            page = (0, _routesJs.LOADING_PAGE);
+            renderApp();
+            (0, _apiJs.getUserPosts)({
+                userId: data.userId,
+                token: getToken()
+            }).then((userPosts)=>{
+                page = (0, _routesJs.USER_POSTS_PAGE);
+                posts = userPosts;
+                renderApp({
+                    userPosts
+                });
+            }).catch((error)=>{
+                console.error(error);
+                goToPage((0, _routesJs.USER_POSTS_PAGE));
+            });
         }
         page = newPage;
         renderApp();
@@ -667,28 +677,15 @@ const renderApp = ()=>{
         user,
         goToPage
     });
-    // if (page === ADD_POSTS_PAGE) {
-    //   return renderAddPostPageComponent({
-    //     appEl,
-    //     onAddPostClick({ description, imageUrl }) {
-    //       // TODO: реализовать добавление поста в API
-    //       console.log("Добавляю пост...", { description, imageUrl });
-    //       goToPage(POSTS_PAGE);
-    //     },
-    //   });
-    // }
     if (page === (0, _routesJs.ADD_POSTS_PAGE)) return (0, _addPostPageComponentJs.renderAddPostPageComponent)({
         appEl,
         onAddPostClick ({ description, imageFile }) {
-            // Показываем страницу загрузки во время обработки добавления поста
             goToPage((0, _routesJs.LOADING_PAGE));
-            // Загрузка изображения и добавление поста
             (0, _apiJs.addPost)({
                 token: getToken(),
                 description,
                 imageFile
             }).then(()=>{
-                // После успешного добавления поста, обновляем список постов и переходим на страницу с постами
                 return (0, _apiJs.getPosts)({
                     token: getToken()
                 });
@@ -701,7 +698,6 @@ const renderApp = ()=>{
                 goToPage((0, _routesJs.POSTS_PAGE));
             }).catch((error)=>{
                 console.error(error);
-                // В случае ошибки также переходим на страницу с постами, возможно, стоит обработать ошибку более наглядно для пользователя
                 goToPage((0, _routesJs.POSTS_PAGE));
             });
         }
@@ -709,17 +705,17 @@ const renderApp = ()=>{
     if (page === (0, _routesJs.POSTS_PAGE)) return (0, _postsPageComponentJs.renderPostsPageComponent)({
         appEl
     });
-    if (page === (0, _routesJs.USER_POSTS_PAGE)) {
-        // TODO: реализовать страницу фотографию пользвателя
-        appEl.innerHTML = "\u0417\u0434\u0435\u0441\u044C \u0431\u0443\u0434\u0435\u0442 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0430 \u0444\u043E\u0442\u043E\u0433\u0440\u0430\u0444\u0438\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F";
-        return;
-    }
+    if (page === (0, _routesJs.USER_POSTS_PAGE)) (0, _postsPageComponentJs.renderUserPostsPageComponent)({
+        appEl,
+        userPosts: posts
+    });
 };
 goToPage((0, _routesJs.POSTS_PAGE));
 
 },{"./api.js":"eqUwj","./components/add-post-page-component.js":"89X0D","./components/auth-page-component.js":"hHvvy","./routes.js":"biSHN","./components/posts-page-component.js":"3pw3s","./components/loading-page-component.js":"8bmSl","./helpers.js":"9Ty9u","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eqUwj":[function(require,module,exports) {
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
+// const personalKey = "фкеуь";
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getPosts", ()=>getPosts);
@@ -728,32 +724,13 @@ parcelHelpers.export(exports, "registerUser", ()=>registerUser);
 parcelHelpers.export(exports, "loginUser", ()=>loginUser);
 // Загружает картинку в облако, возвращает url загруженной картинки
 parcelHelpers.export(exports, "uploadImage", ()=>uploadImage);
-// export function addPost({ token, description, imageFile }) {
-// 	return uploadImage({ file: imageFile })
-// 		.then(uploadResponse => {
-// 			const imageUrl = uploadResponse.url
-// 			return fetch(postsHost, {
-// 				method: 'POST',
-// 				headers: {
-// 					'Content-Type': 'application/json',
-// 					Authorization: token,
-// 				},
-// 				body: JSON.stringify({
-// 					description,
-// 					imageUrl,
-// 				}),
-// 			})
-// 		})
-// 		.then(response => {
-// 			if (!response.ok) {
-// 				throw new Error('Ошибка при добавлении поста')
-// 			}
-// 			return response.json()
-// 		})
-// }
 parcelHelpers.export(exports, "addPost", ()=>addPost);
+parcelHelpers.export(exports, "getUserPosts", ()=>getUserPosts);
+parcelHelpers.export(exports, "likePost", ()=>likePost);
+parcelHelpers.export(exports, "dislikePost", ()=>dislikePost);
 const personalKey = "prod";
-const baseHost = "https://webdev-hw-api.vercel.app";
+// const baseHost = "https://webdev-hw-api.vercel.app";
+const baseHost = "https://wedev-api.sky.pro";
 const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
 function getPosts({ token }) {
     return fetch(postsHost, {
@@ -824,6 +801,30 @@ function addPost({ token, description, imageFile }) {
         return response.json();
     });
 }
+function getUserPosts({ userId, token }) {
+    return fetch(`${baseHost}/user-posts/${userId}`, {
+        method: "GET",
+        headers: {
+            Authorization: token
+        }
+    }).then((response)=>response.json()).then((data)=>data.posts);
+}
+function likePost({ postId, token }) {
+    return fetch(`${postsHost}/${postId}/like`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }).then((response)=>response.json());
+}
+function dislikePost({ postId, token }) {
+    return fetch(`${postsHost}/${postId}/dislike`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    }).then((response)=>response.json());
+}
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -856,26 +857,6 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"89X0D":[function(require,module,exports) {
-// export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
-//   const render = () => {
-//     // TODO: Реализовать страницу добавления поста
-//     const appHtml = `
-//     <div class="page-container">
-//       <div class="header-container"></div>
-//       Cтраница добавления поста
-//       <button class="button" id="add-button">Добавить</button>
-//     </div>
-//   `;
-//     appEl.innerHTML = appHtml;
-//     document.getElementById("add-button").addEventListener("click", () => {
-//       onAddPostClick({
-//         description: "Описание картинки",
-//         imageUrl: "https://image.png",
-//       });
-//     });
-//   };
-//   render();
-// }
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAddPostPageComponent", ()=>renderAddPostPageComponent);
@@ -1130,11 +1111,33 @@ function renderUploadImageComponent({ element, onImageUrlChange }) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderPostsPageComponent", ()=>renderPostsPageComponent);
+parcelHelpers.export(exports, "renderUserPostsPageComponent", ()=>renderUserPostsPageComponent);
 var _routesJs = require("../routes.js");
 var _headerComponentJs = require("./header-component.js");
 var _indexJs = require("../index.js");
+var _apiJs = require("../api.js");
 var _dateFns = require("date-fns");
 var _locale = require("date-fns/locale");
+const toggleLike = (postId, isLiked)=>{
+    const token = (0, _indexJs.user) ? `Bearer ${(0, _indexJs.user).token}` : undefined;
+    if (!token) {
+        console.log("\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C \u043D\u0435 \u0430\u0432\u0442\u043E\u0440\u0438\u0437\u043E\u0432\u0430\u043D");
+        return;
+    }
+    const action = isLiked ? (0, _apiJs.dislikePost) : (0, _apiJs.likePost);
+    action({
+        postId,
+        token
+    }).then((updatedPost)=>{
+        const postIndex = (0, _indexJs.posts).findIndex((post)=>post.id === updatedPost.post.id);
+        if (postIndex !== -1) {
+            (0, _indexJs.posts)[postIndex] = updatedPost.post;
+            renderPostsPageComponent({
+                appEl: document.getElementById("app")
+            });
+        }
+    }).catch((error)=>console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0435 \u043B\u0430\u0439\u043A\u0430:", error));
+};
 function renderPostsPageComponent({ appEl }) {
     // TODO: реализовать рендер постов из api
     // console.log("Актуальный список постов:", posts);
@@ -1183,11 +1186,65 @@ function renderPostsPageComponent({ appEl }) {
             locale: (0, _locale.ru)
         })}</p>
 		`;
+        postItem.querySelector(".post-header").addEventListener("click", function() {
+            (0, _indexJs.goToPage)((0, _routesJs.USER_POSTS_PAGE), {
+                userId: post.user.id
+            });
+        });
+        postsList.appendChild(postItem);
+    });
+    document.querySelectorAll(".like-button").forEach((button)=>{
+        button.addEventListener("click", function() {
+            const postId = this.getAttribute("data-post-id");
+            const isLiked = (0, _indexJs.posts).find((post)=>post.id === postId).isLiked;
+            toggleLike(postId, isLiked);
+        });
+    });
+}
+function renderUserPostsPageComponent({ appEl, userPosts }) {
+    appEl.innerHTML = "";
+    const pageContainer = document.createElement("div");
+    pageContainer.className = "page-container";
+    appEl.appendChild(pageContainer);
+    const headerContainer = document.createElement("div");
+    headerContainer.className = "header-container";
+    pageContainer.appendChild(headerContainer);
+    (0, _headerComponentJs.renderHeaderComponent)({
+        element: headerContainer
+    });
+    const postsList = document.createElement("ul");
+    postsList.className = "posts";
+    pageContainer.appendChild(postsList);
+    userPosts.forEach((post)=>{
+        const postItem = document.createElement("li");
+        postItem.className = "post";
+        let likesText = post.likes.length > 0 ? `${post.likes[0].name}${post.likes.length > 1 ? ` \u{438} \u{435}\u{449}\u{435} ${post.likes.length - 1}` : ""}` : "0";
+        const likeImagePath = `./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg`;
+        postItem.innerHTML = `
+            <div class="post-header" data-user-id="${post.user.id}">
+                <img src="${post.user.imageUrl}" class="post-header__user-image">
+                <p class="post-header__user-name">${post.user.name}</p>
+            </div>
+            <div class="post-image-container">
+                <img class="post-image" src="${post.imageUrl}">
+            </div>
+            <div class="post-likes">
+                <button data-post-id="${post.id}" class="like-button">
+                    <img src="${likeImagePath}">
+                </button>
+                <p class="post-likes-text">\u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong></p>
+            </div>
+            <p class="post-text"><span class="user-name">${post.user.name}</span> ${post.description}</p>
+            <p class="post-date">${(0, _dateFns.formatDistanceToNow)(new Date(post.createdAt), {
+            addSuffix: true,
+            locale: (0, _locale.ru)
+        })}</p>
+        `;
         postsList.appendChild(postItem);
     });
 }
 
-},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","date-fns":"dU215","date-fns/locale":"aigPy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dU215":[function(require,module,exports) {
+},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","date-fns":"dU215","date-fns/locale":"aigPy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../api.js":"eqUwj"}],"dU215":[function(require,module,exports) {
 "use strict";
 var _index = require("bb476f479aec785f");
 Object.keys(_index).forEach(function(key) {

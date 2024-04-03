@@ -1,7 +1,9 @@
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
+// const personalKey = "фкеуь";
 const personalKey = "prod";
-const baseHost = "https://webdev-hw-api.vercel.app";
+// const baseHost = "https://webdev-hw-api.vercel.app";
+const baseHost = "https://wedev-api.sky.pro"
 const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
 
 export function getPosts({ token }) {
@@ -69,30 +71,6 @@ export function uploadImage({ file }) {
   });
 }
 
-// export function addPost({ token, description, imageFile }) {
-// 	return uploadImage({ file: imageFile })
-// 		.then(uploadResponse => {
-// 			const imageUrl = uploadResponse.url
-
-// 			return fetch(postsHost, {
-// 				method: 'POST',
-// 				headers: {
-// 					'Content-Type': 'application/json',
-// 					Authorization: token,
-// 				},
-// 				body: JSON.stringify({
-// 					description,
-// 					imageUrl,
-// 				}),
-// 			})
-// 		})
-// 		.then(response => {
-// 			if (!response.ok) {
-// 				throw new Error('Ошибка при добавлении поста')
-// 			}
-// 			return response.json()
-// 		})
-// }
 export function addPost({ token, description, imageFile }) {
 	return uploadImage({ file: imageFile })
 		.then(uploadResponse => {
@@ -109,4 +87,33 @@ export function addPost({ token, description, imageFile }) {
 			}
 			return response.json()
 		})
+}
+
+export function getUserPosts({ userId, token }) {
+	return fetch(`${baseHost}/user-posts/${userId}`, {
+		method: 'GET',
+		headers: {
+			Authorization: token,
+		},
+	})
+		.then(response => response.json())
+		.then(data => data.posts)
+}
+
+export function likePost({ postId, token }) {
+	return fetch(`${postsHost}/${postId}/like`, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	}).then(response => response.json())
+}
+
+export function dislikePost({ postId, token }) {
+	return fetch(`${postsHost}/${postId}/dislike`, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	}).then(response => response.json())
 }
