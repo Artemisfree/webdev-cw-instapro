@@ -1,4 +1,4 @@
-import { getPosts, addPost, getUserPosts } from './api.js'
+import { getPosts, addPost, getUserPosts, uploadImage } from './api.js'
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -130,7 +130,7 @@ const renderApp = () => {
 					})
 					.then(newPosts => {
 						posts = newPosts
-            console.log('Добавляю пост...', { description, imageUrl })
+						console.log('Добавляю пост...', { description, imageUrl })
 						goToPage(POSTS_PAGE)
 					})
 					.catch(error => {
@@ -138,6 +138,7 @@ const renderApp = () => {
 						goToPage(POSTS_PAGE)
 					})
 			},
+			uploadImage,
 		})
 	}
 

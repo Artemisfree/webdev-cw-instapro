@@ -700,7 +700,8 @@ const renderApp = ()=>{
                 console.error(error);
                 goToPage((0, _routesJs.POSTS_PAGE));
             });
-        }
+        },
+        uploadImage: (0, _apiJs.uploadImage)
     });
     if (page === (0, _routesJs.POSTS_PAGE)) return (0, _postsPageComponentJs.renderPostsPageComponent)({
         appEl
@@ -715,7 +716,6 @@ goToPage((0, _routesJs.POSTS_PAGE));
 },{"./api.js":"eqUwj","./components/add-post-page-component.js":"89X0D","./components/auth-page-component.js":"hHvvy","./routes.js":"biSHN","./components/posts-page-component.js":"3pw3s","./components/loading-page-component.js":"8bmSl","./helpers.js":"9Ty9u","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eqUwj":[function(require,module,exports) {
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
-// const personalKey = "фкеуь";
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getPosts", ()=>getPosts);
@@ -728,10 +728,11 @@ parcelHelpers.export(exports, "addPost", ()=>addPost);
 parcelHelpers.export(exports, "getUserPosts", ()=>getUserPosts);
 parcelHelpers.export(exports, "likePost", ()=>likePost);
 parcelHelpers.export(exports, "dislikePost", ()=>dislikePost);
-const personalKey = "prod";
+const personalKey = "own";
+// const personalKey = "prod";
 // const baseHost = "https://webdev-hw-api.vercel.app";
-const baseHost = "https://wedev-api.sky.pro";
-const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
+const baseHost = "https://wedev-api.sky.pro/";
+const postsHost = `${baseHost}api/v1/${personalKey}/instapro`;
 function getPosts({ token }) {
     return fetch(postsHost, {
         method: "GET",
@@ -760,7 +761,7 @@ function registerUser({ login, password, name, imageUrl }) {
     });
 }
 function loginUser({ login, password }) {
-    return fetch(baseHost + "/api/user/login", {
+    return fetch(`${baseHost}api/user/login`, {
         method: "POST",
         body: JSON.stringify({
             login,
@@ -774,19 +775,23 @@ function loginUser({ login, password }) {
 function uploadImage({ file }) {
     const data = new FormData();
     data.append("file", file);
-    return fetch(baseHost + "/api/upload/image", {
+    return fetch(`${baseHost}api/upload/image`, {
         method: "POST",
         body: data
     }).then((response)=>{
         return response.json();
+    }).then((data)=>{
+        console.log(data.fileUrl);
+        return data;
     });
 }
 function addPost({ token, description, imageFile }) {
+    console.log("\u041F\u0435\u0440\u0435\u0434\u0430\u044E \u0442\u043E\u043A\u0435\u043D:", token);
     return uploadImage({
         file: imageFile
     }).then((uploadResponse)=>{
         const imageUrl = uploadResponse.fileUrl;
-        return fetch(`${baseHost}/`, {
+        return fetch(`https://wedev-api.sky.pro/api/v1/${personalKey}/instapro/`, {
             method: "POST",
             headers: {
                 authorization: `Bearer ${token}`
@@ -802,10 +807,10 @@ function addPost({ token, description, imageFile }) {
     });
 }
 function getUserPosts({ userId, token }) {
-    return fetch(`${baseHost}/user-posts/${userId}`, {
+    return fetch(`${postsHost}/user-posts/${userId}`, {
         method: "GET",
         headers: {
-            Authorization: token
+            Authorization: `Bearer ${token}`
         }
     }).then((response)=>response.json()).then((data)=>data.posts);
 }
@@ -857,30 +862,63 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"89X0D":[function(require,module,exports) {
+// export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
+// 	const render = () => {
+// 		const appHtml = `
+//       <div class="page-container">
+//         <div class="header-container"></div>
+//         <h1>Добавление нового поста</h1>
+//         <form id="add-post-form">
+//           <input type="text" id="description" placeholder="Описание" required />
+//           <input type="file" id="imageFile" required />
+//           <button type="submit" class="button">Добавить</button>
+//         </form>
+//       </div>
+//     `
+// 		appEl.innerHTML = appHtml
+// 		document
+// 			.getElementById('add-post-form')
+// 			.addEventListener('submit', event => {
+// 				event.preventDefault()
+// 				const description = document.getElementById('description').value
+// 				const imageFile = document.getElementById('imageFile').files[0]
+// 				onAddPostClick({
+// 					description,
+// 					imageFile,
+// 				})
+// 			})
+// 	}
+// 	render()
+// }
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAddPostPageComponent", ()=>renderAddPostPageComponent);
-function renderAddPostPageComponent({ appEl, onAddPostClick }) {
+function renderAddPostPageComponent({ appEl, onAddPostClick, uploadImage }) {
     const render = ()=>{
         const appHtml = `
-      <div class="page-container">
-        <div class="header-container"></div>
-        <h1>\u{414}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{435} \u{43D}\u{43E}\u{432}\u{43E}\u{433}\u{43E} \u{43F}\u{43E}\u{441}\u{442}\u{430}</h1>
-        <form id="add-post-form">
-          <input type="text" id="description" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435}" required />
-          <input type="file" id="imageFile" required />
-          <button type="submit" class="button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
-        </form>
-      </div>
+    <div class="page-container">
+      <div class="header-container"></div>
+      <div>\u{421}\u{442}\u{440}\u{430}\u{43D}\u{438}\u{446}\u{430} \u{434}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{44F} \u{43F}\u{43E}\u{441}\u{442}\u{430}</div>
+      <input type="text" id="description-input" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435}" />
+      <input type="file" id="image-input" />
+      <button class="button" id="add-button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
+    </div>
     `;
         appEl.innerHTML = appHtml;
-        document.getElementById("add-post-form").addEventListener("submit", (event)=>{
-            event.preventDefault();
-            const description = document.getElementById("description").value;
-            const imageFile = document.getElementById("imageFile").files[0];
-            onAddPostClick({
-                description,
-                imageFile
+        document.getElementById("add-button").addEventListener("click", ()=>{
+            const description = document.getElementById("description-input").value;
+            const imageFile = document.getElementById("image-input").files[0];
+            if (!description || !imageFile) {
+                alert("\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0434\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0438 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435.");
+                return;
+            }
+            uploadImage(imageFile).then((imageUrl)=>{
+                onAddPostClick({
+                    description,
+                    imageUrl
+                });
+            }).catch((error)=>{
+                console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F: ", error);
             });
         });
     };
@@ -1139,8 +1177,7 @@ const toggleLike = (postId, isLiked)=>{
     }).catch((error)=>console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0435 \u043B\u0430\u0439\u043A\u0430:", error));
 };
 function renderPostsPageComponent({ appEl }) {
-    // TODO: реализовать рендер постов из api
-    // console.log("Актуальный список постов:", posts);
+    console.log("\u0410\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0439 \u0441\u043F\u0438\u0441\u043E\u043A \u043F\u043E\u0441\u0442\u043E\u0432:", (0, _indexJs.posts));
     appEl.innerHTML = "";
     const pageContainer = document.createElement("div");
     pageContainer.className = "page-container";
@@ -1244,7 +1281,7 @@ function renderUserPostsPageComponent({ appEl, userPosts }) {
     });
 }
 
-},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","date-fns":"dU215","date-fns/locale":"aigPy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../api.js":"eqUwj"}],"dU215":[function(require,module,exports) {
+},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../api.js":"eqUwj","date-fns":"dU215","date-fns/locale":"aigPy"}],"dU215":[function(require,module,exports) {
 "use strict";
 var _index = require("bb476f479aec785f");
 Object.keys(_index).forEach(function(key) {

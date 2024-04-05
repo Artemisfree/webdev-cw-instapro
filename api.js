@@ -1,10 +1,10 @@
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
-// const personalKey = "фкеуь";
-const personalKey = "prod";
+const personalKey = "own";
+// const personalKey = "prod";
 // const baseHost = "https://webdev-hw-api.vercel.app";
-const baseHost = "https://wedev-api.sky.pro"
-const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
+const baseHost = 'https://wedev-api.sky.pro/'
+const postsHost = `${baseHost}api/v1/${personalKey}/instapro`
 
 export function getPosts({ token }) {
   return fetch(postsHost, {
@@ -44,7 +44,7 @@ export function registerUser({ login, password, name, imageUrl }) {
 }
 
 export function loginUser({ login, password }) {
-  return fetch(baseHost + "/api/user/login", {
+  return fetch(`${baseHost}api/user/login`, {
     method: "POST",
     body: JSON.stringify({
       login,
@@ -63,23 +63,33 @@ export function uploadImage({ file }) {
   const data = new FormData();
   data.append("file", file);
 
-  return fetch(baseHost + "/api/upload/image", {
-    method: "POST",
-    body: data,
-  }).then((response) => {
-    return response.json();
-  });
+  return fetch(`${baseHost}api/upload/image`, {
+		method: 'POST',
+		body: data,
+	})
+		.then(response => {
+			return response.json()
+		})
+		.then(data => {
+			console.log(data.fileUrl)
+      return data
+		})
 }
 
 export function addPost({ token, description, imageFile }) {
-	return uploadImage({ file: imageFile })
+	console.log('Передаю токен:', token)
+  return uploadImage({ file: imageFile })
 		.then(uploadResponse => {
 			const imageUrl = uploadResponse.fileUrl
-			return fetch(`${baseHost}/`, {
-				method: 'POST',
-				headers: { authorization: `Bearer ${token}` },
-				body: JSON.stringify({ description, imageUrl }),
-			})
+			return fetch(`https://wedev-api.sky.pro/api/v1/${personalKey}/instapro/`,
+				{
+					method: 'POST',
+					headers: {
+						authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({ description, imageUrl }),
+				}
+			)
 		})
 		.then(response => {
 			if (!response.ok) {
@@ -90,10 +100,10 @@ export function addPost({ token, description, imageFile }) {
 }
 
 export function getUserPosts({ userId, token }) {
-	return fetch(`${baseHost}/user-posts/${userId}`, {
+	return fetch(`${postsHost}/user-posts/${userId}`, {
 		method: 'GET',
 		headers: {
-			Authorization: token,
+			Authorization: `Bearer ${token}`,
 		},
 	})
 		.then(response => response.json())
