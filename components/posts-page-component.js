@@ -28,8 +28,7 @@ const toggleLike = (postId, isLiked) => {
 
 
 export function renderPostsPageComponent({ appEl }) {
-	// TODO: реализовать рендер постов из api
-	// console.log("Актуальный список постов:", posts);
+  console.log("Актуальный список постов:", posts);
   appEl.innerHTML = ''
   const pageContainer = document.createElement('div')
 	pageContainer.className = 'page-container'
