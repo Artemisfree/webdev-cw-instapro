@@ -708,6 +708,7 @@ goToPage((0, _routesJs.POSTS_PAGE));
 },{"./api.js":"eqUwj","./components/add-post-page-component.js":"89X0D","./components/auth-page-component.js":"hHvvy","./routes.js":"biSHN","./components/posts-page-component.js":"3pw3s","./components/loading-page-component.js":"8bmSl","./helpers.js":"9Ty9u","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"eqUwj":[function(require,module,exports) {
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
+// const personalKey = "prod";
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getPosts", ()=>getPosts);
@@ -718,9 +719,9 @@ parcelHelpers.export(exports, "loginUser", ()=>loginUser);
 parcelHelpers.export(exports, "uploadImage", ()=>uploadImage);
 parcelHelpers.export(exports, "addPost", ()=>addPost);
 parcelHelpers.export(exports, "getUserPosts", ()=>getUserPosts);
-parcelHelpers.export(exports, "toggleLike", ()=>toggleLike);
-const personalKey = "prod";
-// const personalKey = "own";
+parcelHelpers.export(exports, "likePost", ()=>likePost);
+parcelHelpers.export(exports, "dislikePost", ()=>dislikePost);
+const personalKey = "own";
 // const baseHost = "https://webdev-hw-api.vercel.app";
 const baseHost = "https://wedev-api.sky.pro/";
 const postsHost = `${baseHost}api/v1/${personalKey}/instapro`;
@@ -804,15 +805,25 @@ function getUserPosts({ userId, token }) {
         return response.json();
     }).then((data)=>data.posts);
 }
-function toggleLike({ postId, token, isLiked }) {
-    const url = isLiked ? `${postsHost}/${postId}/dislike` : `${postsHost}/${postId}/like`;
-    return fetch(url, {
+function likePost({ postId, token }) {
+    return fetch(`${postsHost}/${postId}/like`, {
         method: "POST",
         headers: {
             Authorization: token
         }
     }).then((response)=>{
-        if (!response.ok) throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441 \u043B\u0430\u0439\u043A\u0430");
+        if (!response.ok) throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u043B\u0430\u0439\u043A \u043D\u0430 \u043F\u043E\u0441\u0442");
+        return response.json();
+    });
+}
+function dislikePost({ postId, token }) {
+    return fetch(`${postsHost}/${postId}/dislike`, {
+        method: "POST",
+        headers: {
+            Authorization: token
+        }
+    }).then((response)=>{
+        if (!response.ok) throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0443\u0431\u0440\u0430\u0442\u044C \u043B\u0430\u0439\u043A \u0441 \u043F\u043E\u0441\u0442\u0430");
         return response.json();
     });
 }
@@ -896,7 +907,7 @@ function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     render();
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../api.js":"eqUwj"}],"hHvvy":[function(require,module,exports) {
+},{"../api.js":"eqUwj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hHvvy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAuthPageComponent", ()=>renderAuthPageComponent);
@@ -1181,27 +1192,32 @@ function renderPostsPageComponent({ appEl }) {
     document.querySelectorAll(".like-button").forEach((button)=>{
         button.addEventListener("click", function() {
             const postId = this.dataset.postId;
-            const post = (0, _indexJs.posts).find((post)=>post.id === postId);
-            const isLiked = post.likes.some((like)=>like.userId === (0, _indexJs.user).id);
-            (0, _apiJs.toggleLike)({
+            const token = `Bearer ${(0, _indexJs.user).token}`;
+            const likesTextElement = this.nextElementSibling;
+            if (this.classList.contains("liked")) (0, _apiJs.dislikePost)({
                 postId,
-                token: `Bearer ${(0, _indexJs.user).token}`,
-                isLiked: !isLiked
-            }).then(()=>{
-                if (isLiked) post.likes = post.likes.filter((like)=>like.userId !== (0, _indexJs.user).id);
-                else post.likes.push({
-                    userId: (0, _indexJs.user).id,
-                    name: (0, _indexJs.user).name
-                });
-                let likesText = post.likes.map((like)=>like.name).join(", ");
-                if (likesText === "") likesText = "0";
-                const likesTextElement = this.closest(".post-likes").querySelector(".post-likes-text strong");
-                likesTextElement.textContent = `${likesText}`;
-            }).catch((error)=>{
-                console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u043B\u0430\u0439\u043A\u0430: ", error);
+                token
+            }).then((data)=>{
+                this.classList.remove("liked");
+                updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
+            });
+            else (0, _apiJs.likePost)({
+                postId,
+                token
+            }).then((data)=>{
+                this.classList.add("liked");
+                updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
             });
         });
     });
+    function updateLikesText(element, likesCount, firstLikerName) {
+        let likesText = "0";
+        if (likesCount > 0) {
+            likesText = `${firstLikerName}`;
+            if (likesCount > 1) likesText += ` \u{438} \u{435}\u{449}\u{435} ${likesCount - 1}`;
+        }
+        element.innerHTML = `\u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong>`;
+    }
 }
 function renderUserPostsPageComponent({ appEl, userPosts }) {
     console.log("\u041F\u043E\u0441\u0442\u044B \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F:", userPosts);
@@ -1252,30 +1268,35 @@ function renderUserPostsPageComponent({ appEl, userPosts }) {
     document.querySelectorAll(".like-button").forEach((button)=>{
         button.addEventListener("click", function() {
             const postId = this.dataset.postId;
-            const post = (0, _indexJs.posts).find((post)=>post.id === postId);
-            const isLiked = post.likes.some((like)=>like.userId === (0, _indexJs.user).id);
-            (0, _apiJs.toggleLike)({
+            const token = `Bearer ${(0, _indexJs.user).token}`;
+            const likesTextElement = this.nextElementSibling;
+            if (this.classList.contains("liked")) (0, _apiJs.dislikePost)({
                 postId,
-                token: `Bearer ${(0, _indexJs.user).token}`,
-                isLiked: !isLiked
-            }).then(()=>{
-                if (isLiked) post.likes = post.likes.filter((like)=>like.userId !== (0, _indexJs.user).id);
-                else post.likes.push({
-                    userId: (0, _indexJs.user).id,
-                    name: (0, _indexJs.user).name
-                });
-                let likesText = post.likes.map((like)=>like.name).join(", ");
-                if (likesText === "") likesText = "0";
-                const likesTextElement = this.closest(".post-likes").querySelector(".post-likes-text strong");
-                likesTextElement.textContent = `${likesText}`;
-            }).catch((error)=>{
-                console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u043B\u0430\u0439\u043A\u0430: ", error);
+                token
+            }).then((data)=>{
+                this.classList.remove("liked");
+                updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
+            });
+            else (0, _apiJs.likePost)({
+                postId,
+                token
+            }).then((data)=>{
+                this.classList.add("liked");
+                updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
             });
         });
     });
+    function updateLikesText(element, likesCount, firstLikerName) {
+        let likesText = "0";
+        if (likesCount > 0) {
+            likesText = `${firstLikerName}`;
+            if (likesCount > 1) likesText += ` \u{438} \u{435}\u{449}\u{435} ${likesCount - 1}`;
+        }
+        element.innerHTML = `\u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong>`;
+    }
 }
 
-},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"dU215","date-fns/locale":"aigPy","../api.js":"eqUwj"}],"dU215":[function(require,module,exports) {
+},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","../api.js":"eqUwj","date-fns":"dU215","date-fns/locale":"aigPy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dU215":[function(require,module,exports) {
 "use strict";
 var _index = require("bb476f479aec785f");
 Object.keys(_index).forEach(function(key) {

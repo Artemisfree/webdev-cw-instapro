@@ -112,19 +112,29 @@ export function getUserPosts({ userId, token }) {
 		.then(data => data.posts)
 }
 
-
-export function toggleLike({ postId, token, isLiked }) {
-  const url = isLiked
-		? `${postsHost}/${postId}/dislike`
-		: `${postsHost}/${postId}/like`
-	return fetch(url, {
+export function likePost({ postId, token }) {
+	return fetch(`${postsHost}/${postId}/like`, {
 		method: 'POST',
 		headers: {
 			Authorization: token,
 		},
 	}).then(response => {
 		if (!response.ok) {
-			throw new Error('Не удалось изменить статус лайка')
+			throw new Error('Не удалось поставить лайк на пост')
+		}
+		return response.json()
+	})
+}
+
+export function dislikePost({ postId, token }) {
+	return fetch(`${postsHost}/${postId}/dislike`, {
+		method: 'POST',
+		headers: {
+			Authorization: token,
+		},
+	}).then(response => {
+		if (!response.ok) {
+			throw new Error('Не удалось убрать лайк с поста')
 		}
 		return response.json()
 	})
