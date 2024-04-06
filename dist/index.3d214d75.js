@@ -646,9 +646,7 @@ const goToPage = (newPage, data)=>{
             }).then((userPosts)=>{
                 page = (0, _routesJs.USER_POSTS_PAGE);
                 posts = userPosts;
-                renderApp({
-                    userPosts
-                });
+                renderApp();
             }).catch((error)=>{
                 console.error(error);
                 goToPage((0, _routesJs.USER_POSTS_PAGE));
@@ -679,29 +677,23 @@ const renderApp = ()=>{
     });
     if (page === (0, _routesJs.ADD_POSTS_PAGE)) return (0, _addPostPageComponentJs.renderAddPostPageComponent)({
         appEl,
-        onAddPostClick ({ description, imageFile }) {
-            goToPage((0, _routesJs.LOADING_PAGE));
-            (0, _apiJs.addPost)({
-                token: getToken(),
+        onAddPostClick ({ description, imageUrl }) {
+            console.log("\u0414\u043E\u0431\u0430\u0432\u043B\u044F\u044E \u043F\u043E\u0441\u0442...", {
                 description,
-                imageFile
+                imageUrl
+            });
+            const token = `Bearer ${user.token}`;
+            (0, _apiJs.addPost)({
+                description,
+                imageUrl,
+                token
             }).then(()=>{
-                return (0, _apiJs.getPosts)({
-                    token: getToken()
-                });
-            }).then((newPosts)=>{
-                posts = newPosts;
-                console.log("\u0414\u043E\u0431\u0430\u0432\u043B\u044F\u044E \u043F\u043E\u0441\u0442...", {
-                    description,
-                    imageUrl
-                });
+                console.log("\u041F\u043E\u0441\u0442 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D.");
                 goToPage((0, _routesJs.POSTS_PAGE));
             }).catch((error)=>{
-                console.error(error);
-                goToPage((0, _routesJs.POSTS_PAGE));
+                console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u0438 \u043F\u043E\u0441\u0442\u0430: ", error);
             });
-        },
-        uploadImage: (0, _apiJs.uploadImage)
+        }
     });
     if (page === (0, _routesJs.POSTS_PAGE)) return (0, _postsPageComponentJs.renderPostsPageComponent)({
         appEl
@@ -726,10 +718,9 @@ parcelHelpers.export(exports, "loginUser", ()=>loginUser);
 parcelHelpers.export(exports, "uploadImage", ()=>uploadImage);
 parcelHelpers.export(exports, "addPost", ()=>addPost);
 parcelHelpers.export(exports, "getUserPosts", ()=>getUserPosts);
-parcelHelpers.export(exports, "likePost", ()=>likePost);
-parcelHelpers.export(exports, "dislikePost", ()=>dislikePost);
-const personalKey = "own";
-// const personalKey = "prod";
+parcelHelpers.export(exports, "toggleLike", ()=>toggleLike);
+const personalKey = "prod";
+// const personalKey = "own";
 // const baseHost = "https://webdev-hw-api.vercel.app";
 const baseHost = "https://wedev-api.sky.pro/";
 const postsHost = `${baseHost}api/v1/${personalKey}/instapro`;
@@ -747,7 +738,7 @@ function getPosts({ token }) {
     });
 }
 function registerUser({ login, password, name, imageUrl }) {
-    return fetch(baseHost + "/api/user", {
+    return fetch(baseHost + "api/user", {
         method: "POST",
         body: JSON.stringify({
             login,
@@ -761,7 +752,7 @@ function registerUser({ login, password, name, imageUrl }) {
     });
 }
 function loginUser({ login, password }) {
-    return fetch(`${baseHost}api/user/login`, {
+    return fetch("https://wedev-api.sky.pro/api/user/login", {
         method: "POST",
         body: JSON.stringify({
             login,
@@ -775,7 +766,7 @@ function loginUser({ login, password }) {
 function uploadImage({ file }) {
     const data = new FormData();
     data.append("file", file);
-    return fetch(`${baseHost}api/upload/image`, {
+    return fetch(`https://wedev-api.sky.pro/api/upload/image`, {
         method: "POST",
         body: data
     }).then((response)=>{
@@ -785,50 +776,45 @@ function uploadImage({ file }) {
         return data;
     });
 }
-function addPost({ token, description, imageFile }) {
-    console.log("\u041F\u0435\u0440\u0435\u0434\u0430\u044E \u0442\u043E\u043A\u0435\u043D:", token);
-    return uploadImage({
-        file: imageFile
-    }).then((uploadResponse)=>{
-        const imageUrl = uploadResponse.fileUrl;
-        return fetch(`https://wedev-api.sky.pro/api/v1/${personalKey}/instapro/`, {
-            method: "POST",
-            headers: {
-                authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                description,
-                imageUrl
-            })
-        });
+function addPost({ token, description, imageUrl }) {
+    return fetch(`${postsHost}/`, {
+        method: "POST",
+        headers: {
+            Authorization: token
+        },
+        body: JSON.stringify({
+            description,
+            imageUrl
+        })
     }).then((response)=>{
-        if (!response.ok) throw new Error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u0438 \u043F\u043E\u0441\u0442\u0430");
+        if (!response.ok) throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0434\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043F\u043E\u0441\u0442");
         return response.json();
     });
 }
 function getUserPosts({ userId, token }) {
+    console.log(`\u{41F}\u{41E}\u{421}\u{422}\u{42B} \u{42E}\u{417}\u{415}\u{420}\u{410}: ${token}`);
+    console.log(`\u{41F}\u{41E}\u{421}\u{422}\u{42B} \u{42E}\u{417}\u{415}\u{420}\u{410}: ${userId}`);
     return fetch(`${postsHost}/user-posts/${userId}`, {
         method: "GET",
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: token
         }
-    }).then((response)=>response.json()).then((data)=>data.posts);
+    }).then((response)=>{
+        if (!response.ok) throw new Error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u0438 \u043F\u043E\u0441\u0442\u043E\u0432 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F");
+        return response.json();
+    }).then((data)=>data.posts);
 }
-function likePost({ postId, token }) {
-    return fetch(`${postsHost}/${postId}/like`, {
+function toggleLike({ postId, token, isLiked }) {
+    const url = isLiked ? `${postsHost}/${postId}/dislike` : `${postsHost}/${postId}/like`;
+    return fetch(url, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: token
         }
-    }).then((response)=>response.json());
-}
-function dislikePost({ postId, token }) {
-    return fetch(`${postsHost}/${postId}/dislike`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }).then((response)=>response.json());
+    }).then((response)=>{
+        if (!response.ok) throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441 \u043B\u0430\u0439\u043A\u0430");
+        return response.json();
+    });
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
@@ -862,61 +848,46 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"89X0D":[function(require,module,exports) {
-// export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
-// 	const render = () => {
-// 		const appHtml = `
-//       <div class="page-container">
-//         <div class="header-container"></div>
-//         <h1>Добавление нового поста</h1>
-//         <form id="add-post-form">
-//           <input type="text" id="description" placeholder="Описание" required />
-//           <input type="file" id="imageFile" required />
-//           <button type="submit" class="button">Добавить</button>
-//         </form>
-//       </div>
-//     `
-// 		appEl.innerHTML = appHtml
-// 		document
-// 			.getElementById('add-post-form')
-// 			.addEventListener('submit', event => {
-// 				event.preventDefault()
-// 				const description = document.getElementById('description').value
-// 				const imageFile = document.getElementById('imageFile').files[0]
-// 				onAddPostClick({
-// 					description,
-// 					imageFile,
-// 				})
-// 			})
-// 	}
-// 	render()
-// }
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAddPostPageComponent", ()=>renderAddPostPageComponent);
-function renderAddPostPageComponent({ appEl, onAddPostClick, uploadImage }) {
+var _apiJs = require("../api.js");
+function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     const render = ()=>{
         const appHtml = `
-    <div class="page-container">
-      <div class="header-container"></div>
-      <div>\u{421}\u{442}\u{440}\u{430}\u{43D}\u{438}\u{446}\u{430} \u{434}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{44F} \u{43F}\u{43E}\u{441}\u{442}\u{430}</div>
-      <input type="text" id="description-input" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435}" />
-      <input type="file" id="image-input" />
-      <button class="button" id="add-button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
-    </div>
+      <div class="page-container">
+        <div class="header-container"></div>
+        <h3 class="form-title">\u{421}\u{442}\u{440}\u{430}\u{43D}\u{438}\u{446}\u{430} \u{434}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{44F} \u{43F}\u{43E}\u{441}\u{442}\u{430}</h3>
+        <form class="form-inputs" id="add-post-form">
+          <input class="file-upload-label secondary-button" type="file" id="image-input" accept="image/*" required>
+          <input class="input" type="text" id="description-input" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435} \u{43F}\u{43E}\u{441}\u{442}\u{430}" required>
+          <button type="submit" class="button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
+        </form>
+      </div>
     `;
         appEl.innerHTML = appHtml;
-        document.getElementById("add-button").addEventListener("click", ()=>{
+        document.getElementById("add-post-form").addEventListener("submit", function(event) {
+            event.preventDefault();
             const description = document.getElementById("description-input").value;
             const imageFile = document.getElementById("image-input").files[0];
             if (!description || !imageFile) {
-                alert("\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0434\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0438 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435.");
+                alert("\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0437\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0438 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435.");
                 return;
             }
-            uploadImage(imageFile).then((imageUrl)=>{
-                onAddPostClick({
+            (0, _apiJs.uploadImage)({
+                file: imageFile
+            }).then((response)=>{
+                if (response.fileUrl) onAddPostClick({
                     description,
-                    imageUrl
+                    imageUrl: response.fileUrl
+                }).then(()=>{
+                    alert("\u041F\u043E\u0441\u0442 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D!");
+                    document.getElementById("description-input").value = "";
+                    document.getElementById("image-input").value = "";
+                }).catch((error)=>{
+                    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u0438 \u043F\u043E\u0441\u0442\u0430: ", error);
                 });
+                else console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F.");
             }).catch((error)=>{
                 console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F: ", error);
             });
@@ -925,7 +896,7 @@ function renderAddPostPageComponent({ appEl, onAddPostClick, uploadImage }) {
     render();
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hHvvy":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../api.js":"eqUwj"}],"hHvvy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAuthPageComponent", ()=>renderAuthPageComponent);
@@ -1156,132 +1127,155 @@ var _indexJs = require("../index.js");
 var _apiJs = require("../api.js");
 var _dateFns = require("date-fns");
 var _locale = require("date-fns/locale");
-const toggleLike = (postId, isLiked)=>{
-    const token = (0, _indexJs.user) ? `Bearer ${(0, _indexJs.user).token}` : undefined;
-    if (!token) {
-        console.log("\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C \u043D\u0435 \u0430\u0432\u0442\u043E\u0440\u0438\u0437\u043E\u0432\u0430\u043D");
-        return;
-    }
-    const action = isLiked ? (0, _apiJs.dislikePost) : (0, _apiJs.likePost);
-    action({
-        postId,
-        token
-    }).then((updatedPost)=>{
-        const postIndex = (0, _indexJs.posts).findIndex((post)=>post.id === updatedPost.post.id);
-        if (postIndex !== -1) {
-            (0, _indexJs.posts)[postIndex] = updatedPost.post;
-            renderPostsPageComponent({
-                appEl: document.getElementById("app")
-            });
-        }
-    }).catch((error)=>console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0435 \u043B\u0430\u0439\u043A\u0430:", error));
-};
 function renderPostsPageComponent({ appEl }) {
     console.log("\u0410\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0439 \u0441\u043F\u0438\u0441\u043E\u043A \u043F\u043E\u0441\u0442\u043E\u0432:", (0, _indexJs.posts));
-    appEl.innerHTML = "";
-    const pageContainer = document.createElement("div");
-    pageContainer.className = "page-container";
-    appEl.appendChild(pageContainer);
-    const headerContainer = document.createElement("div");
-    headerContainer.className = "header-container";
-    pageContainer.appendChild(headerContainer);
-    (0, _headerComponentJs.renderHeaderComponent)({
-        element: headerContainer
-    });
-    const postsList = document.createElement("ul");
-    postsList.className = "posts";
-    pageContainer.appendChild(postsList);
-    (0, _indexJs.posts).forEach((post)=>{
-        const postItem = document.createElement("li");
-        postItem.className = "post";
+    const postsHtml = (0, _indexJs.posts).map((post)=>{
         let likesText;
         if (post.likes.length > 0) {
             likesText = `${post.likes[0].name}`;
             if (post.likes.length > 1) likesText += ` \u{438} \u{435}\u{449}\u{435} ${post.likes.length - 1}`;
         } else likesText = "0";
-        const likeImagePath = `./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg`;
-        /**
-		 * TODO: чтобы отформатировать дату создания поста в виде "19 минут назад"
-		 * можно использовать https://date-fns.org/v2.29.3/docs/formatDistanceToNow
-		 */ postItem.innerHTML = `
-			<div class="post-header" data-user-id="${post.user.id}">
-				<img src="${post.user.imageUrl}" class="post-header__user-image">
-				<p class="post-header__user-name">${post.user.name}</p>
-			</div>
-			<div class="post-image-container">
-				<img class="post-image" src="${post.imageUrl}">
-			</div>
-			<div class="post-likes">
-				<button data-post-id="${post.id}" class="like-button">
-					<img src="${likeImagePath}">
-				</button>
-				<p class="post-likes-text">\u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong></p>
-			</div>
-			<p class="post-text"><span class="user-name">${post.user.name}</span> ${post.description}</p>
-			<p class="post-date">${(0, _dateFns.formatDistanceToNow)(new Date(post.createdAt), {
+        return `
+    <li class="post">
+      <div class="post-header" data-user-id="${post.user.id}">
+        <img src="${post.user.imageUrl}" class="post-header__user-image">
+        <p class="post-header__user-name">${post.user.name}</p>
+      </div>
+      <div class="post-image-container">
+        <img class="post-image" src="${post.imageUrl}">
+      </div>
+      <div class="post-likes">
+        <button data-post-id="${post.id}" class="like-button">
+          <img src="./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg">
+        </button>
+        <p class="post-likes-text">
+          \u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong>
+        </p>
+      </div>
+      <p class="post-text">
+        <span class="user-name">${post.user.name}</span> ${post.description}
+      </p>
+      <p class="post-date">
+        ${(0, _dateFns.formatDistanceToNow)(new Date(post.createdAt), {
             addSuffix: true,
             locale: (0, _locale.ru)
-        })}</p>
-		`;
-        postItem.querySelector(".post-header").addEventListener("click", function() {
-            (0, _indexJs.goToPage)((0, _routesJs.USER_POSTS_PAGE), {
-                userId: post.user.id
-            });
+        })}
+      </p>
+    </li>
+  `;
+    }).join("");
+    const appHtml = `
+    <div class="page-container">
+      <div class="header-container"></div>
+      <ul class="posts">${postsHtml}</ul>
+    </div>`;
+    appEl.innerHTML = appHtml;
+    (0, _headerComponentJs.renderHeaderComponent)({
+        element: document.querySelector(".header-container")
+    });
+    for (let userEl of document.querySelectorAll(".post-header"))userEl.addEventListener("click", ()=>{
+        (0, _indexJs.goToPage)((0, _routesJs.USER_POSTS_PAGE), {
+            userId: userEl.dataset.userId
         });
-        postsList.appendChild(postItem);
     });
     document.querySelectorAll(".like-button").forEach((button)=>{
         button.addEventListener("click", function() {
-            const postId = this.getAttribute("data-post-id");
-            const isLiked = (0, _indexJs.posts).find((post)=>post.id === postId).isLiked;
-            toggleLike(postId, isLiked);
+            const postId = this.dataset.postId;
+            const post = (0, _indexJs.posts).find((post)=>post.id === postId);
+            const isLiked = post.likes.some((like)=>like.userId === (0, _indexJs.user).id);
+            (0, _apiJs.toggleLike)({
+                postId,
+                token: `Bearer ${(0, _indexJs.user).token}`,
+                isLiked: !isLiked
+            }).then(()=>{
+                if (isLiked) post.likes = post.likes.filter((like)=>like.userId !== (0, _indexJs.user).id);
+                else post.likes.push({
+                    userId: (0, _indexJs.user).id,
+                    name: (0, _indexJs.user).name
+                });
+                let likesText = post.likes.map((like)=>like.name).join(", ");
+                if (likesText === "") likesText = "0";
+                const likesTextElement = this.closest(".post-likes").querySelector(".post-likes-text strong");
+                likesTextElement.textContent = `${likesText}`;
+            }).catch((error)=>{
+                console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u043B\u0430\u0439\u043A\u0430: ", error);
+            });
         });
     });
 }
 function renderUserPostsPageComponent({ appEl, userPosts }) {
-    appEl.innerHTML = "";
-    const pageContainer = document.createElement("div");
-    pageContainer.className = "page-container";
-    appEl.appendChild(pageContainer);
-    const headerContainer = document.createElement("div");
-    headerContainer.className = "header-container";
-    pageContainer.appendChild(headerContainer);
-    (0, _headerComponentJs.renderHeaderComponent)({
-        element: headerContainer
-    });
-    const postsList = document.createElement("ul");
-    postsList.className = "posts";
-    pageContainer.appendChild(postsList);
-    userPosts.forEach((post)=>{
-        const postItem = document.createElement("li");
-        postItem.className = "post";
-        let likesText = post.likes.length > 0 ? `${post.likes[0].name}${post.likes.length > 1 ? ` \u{438} \u{435}\u{449}\u{435} ${post.likes.length - 1}` : ""}` : "0";
-        const likeImagePath = `./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg`;
-        postItem.innerHTML = `
-            <div class="post-header" data-user-id="${post.user.id}">
-                <img src="${post.user.imageUrl}" class="post-header__user-image">
-                <p class="post-header__user-name">${post.user.name}</p>
-            </div>
-            <div class="post-image-container">
-                <img class="post-image" src="${post.imageUrl}">
-            </div>
-            <div class="post-likes">
-                <button data-post-id="${post.id}" class="like-button">
-                    <img src="${likeImagePath}">
-                </button>
-                <p class="post-likes-text">\u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong></p>
-            </div>
-            <p class="post-text"><span class="user-name">${post.user.name}</span> ${post.description}</p>
-            <p class="post-date">${(0, _dateFns.formatDistanceToNow)(new Date(post.createdAt), {
+    console.log("\u041F\u043E\u0441\u0442\u044B \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F:", userPosts);
+    const postsHtml = userPosts.map((post)=>{
+        let likesText;
+        if (post.likes.length > 0) {
+            likesText = `${post.likes[0].name}`;
+            if (post.likes.length > 1) likesText += ` \u{438} \u{435}\u{449}\u{435} ${post.likes.length - 1}`;
+        } else likesText = "0";
+        return `
+      <li class="post">
+        <div class="post-header" data-user-id="${post.user.id}">
+          <img src="${post.user.imageUrl}" class="post-header__user-image">
+          <p class="post-header__user-name">${post.user.name}</p>
+        </div>
+        <div class="post-image-container">
+          <img class="post-image" src="${post.imageUrl}">
+        </div>
+        <div class="post-likes">
+          <button data-post-id="${post.id}" class="like-button">
+            <img src="./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg">
+          </button>
+          <p class="post-likes-text">
+            \u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong>
+          </p>
+        </div>
+        <p class="post-text">
+          <span class="user-name">${post.user.name}</span> ${post.description}
+        </p>
+        <p class="post-date">
+          ${(0, _dateFns.formatDistanceToNow)(new Date(post.createdAt), {
             addSuffix: true,
             locale: (0, _locale.ru)
-        })}</p>
-        `;
-        postsList.appendChild(postItem);
+        })}
+        </p>
+      </li>
+    `;
+    }).join("");
+    const appHtml = `
+    <div class="page-container">
+      <div class="header-container"></div>
+      <ul class="posts">${postsHtml}</ul>
+    </div>`;
+    appEl.innerHTML = appHtml;
+    (0, _headerComponentJs.renderHeaderComponent)({
+        element: document.querySelector(".header-container")
+    });
+    document.querySelectorAll(".like-button").forEach((button)=>{
+        button.addEventListener("click", function() {
+            const postId = this.dataset.postId;
+            const post = (0, _indexJs.posts).find((post)=>post.id === postId);
+            const isLiked = post.likes.some((like)=>like.userId === (0, _indexJs.user).id);
+            (0, _apiJs.toggleLike)({
+                postId,
+                token: `Bearer ${(0, _indexJs.user).token}`,
+                isLiked: !isLiked
+            }).then(()=>{
+                if (isLiked) post.likes = post.likes.filter((like)=>like.userId !== (0, _indexJs.user).id);
+                else post.likes.push({
+                    userId: (0, _indexJs.user).id,
+                    name: (0, _indexJs.user).name
+                });
+                let likesText = post.likes.map((like)=>like.name).join(", ");
+                if (likesText === "") likesText = "0";
+                const likesTextElement = this.closest(".post-likes").querySelector(".post-likes-text strong");
+                likesTextElement.textContent = `${likesText}`;
+            }).catch((error)=>{
+                console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u043B\u0430\u0439\u043A\u0430: ", error);
+            });
+        });
     });
 }
 
-},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../api.js":"eqUwj","date-fns":"dU215","date-fns/locale":"aigPy"}],"dU215":[function(require,module,exports) {
+},{"../routes.js":"biSHN","./header-component.js":"7lHeM","../index.js":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"dU215","date-fns/locale":"aigPy","../api.js":"eqUwj"}],"dU215":[function(require,module,exports) {
 "use strict";
 var _index = require("bb476f479aec785f");
 Object.keys(_index).forEach(function(key) {

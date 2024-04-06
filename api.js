@@ -1,10 +1,10 @@
 // Замени на свой, чтобы получить независимый от других набор данных.
 // "боевая" версия инстапро лежит в ключе prod
-const personalKey = "own";
 // const personalKey = "prod";
+const personalKey = "own";
 // const baseHost = "https://webdev-hw-api.vercel.app";
 const baseHost = 'https://wedev-api.sky.pro/'
-const postsHost = `${baseHost}api/v1/${personalKey}/instapro`
+const postsHost = `${baseHost}api/v1/${personalKey}/instapro`;
 
 export function getPosts({ token }) {
   return fetch(postsHost, {
@@ -27,7 +27,7 @@ export function getPosts({ token }) {
 
 // https://github.com/GlebkaF/webdev-hw-api/blob/main/pages/api/user/README.md#%D0%B0%D0%B2%D1%82%D0%BE%D1%80%D0%B8%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%D1%81%D1%8F
 export function registerUser({ login, password, name, imageUrl }) {
-  return fetch(baseHost + "/api/user", {
+  return fetch(baseHost + "api/user", {
     method: "POST",
     body: JSON.stringify({
       login,
@@ -44,7 +44,7 @@ export function registerUser({ login, password, name, imageUrl }) {
 }
 
 export function loginUser({ login, password }) {
-  return fetch(`${baseHost}api/user/login`, {
+  return fetch("https://wedev-api.sky.pro/api/user/login", {
     method: "POST",
     body: JSON.stringify({
       login,
@@ -63,67 +63,69 @@ export function uploadImage({ file }) {
   const data = new FormData();
   data.append("file", file);
 
-  return fetch(`${baseHost}api/upload/image`, {
+  return fetch(`https://wedev-api.sky.pro/api/upload/image`, {
 		method: 'POST',
 		body: data,
 	})
 		.then(response => {
-			return response.json()
+			return response.json();
 		})
 		.then(data => {
-			console.log(data.fileUrl)
-      return data
-		})
+			console.log(data.fileUrl);
+      return data;
+		});
 }
 
-export function addPost({ token, description, imageFile }) {
-	console.log('Передаю токен:', token)
-  return uploadImage({ file: imageFile })
-		.then(uploadResponse => {
-			const imageUrl = uploadResponse.fileUrl
-			return fetch(`https://wedev-api.sky.pro/api/v1/${personalKey}/instapro/`,
-				{
-					method: 'POST',
-					headers: {
-						authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ description, imageUrl }),
-				}
-			)
-		})
-		.then(response => {
-			if (!response.ok) {
-				throw new Error('Ошибка при добавлении поста')
-			}
-			return response.json()
-		})
+export function addPost({ token, description, imageUrl }) {
+	return fetch(`${postsHost}/`, {
+		method: 'POST',
+		headers: {
+			Authorization: token,
+		},
+		body: JSON.stringify({
+			description,
+			imageUrl,
+		}),
+	}).then(response => {
+		if (!response.ok) {
+			throw new Error('Не удалось добавить пост')
+		}
+		return response.json()
+	})
 }
 
 export function getUserPosts({ userId, token }) {
+  console.log(`ПОСТЫ ЮЗЕРА: ${token}`)
+  console.log(`ПОСТЫ ЮЗЕРА: ${userId}`)
 	return fetch(`${postsHost}/user-posts/${userId}`, {
 		method: 'GET',
 		headers: {
-			Authorization: `Bearer ${token}`,
+			Authorization: token,
 		},
 	})
-		.then(response => response.json())
+		.then(response => {
+			if (!response.ok) {
+				throw new Error('Ошибка при получении постов пользователя')
+			}
+			return response.json()
+		})
 		.then(data => data.posts)
 }
 
-export function likePost({ postId, token }) {
-	return fetch(`${postsHost}/${postId}/like`, {
-		method: 'POST',
-		headers: {
-			Authorization: `Bearer ${token}`,
-		},
-	}).then(response => response.json())
-}
 
-export function dislikePost({ postId, token }) {
-	return fetch(`${postsHost}/${postId}/dislike`, {
+export function toggleLike({ postId, token, isLiked }) {
+  const url = isLiked
+		? `${postsHost}/${postId}/dislike`
+		: `${postsHost}/${postId}/like`
+	return fetch(url, {
 		method: 'POST',
 		headers: {
-			Authorization: `Bearer ${token}`,
+			Authorization: token,
 		},
-	}).then(response => response.json())
+	}).then(response => {
+		if (!response.ok) {
+			throw new Error('Не удалось изменить статус лайка')
+		}
+		return response.json()
+	})
 }
