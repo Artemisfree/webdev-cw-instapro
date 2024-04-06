@@ -1,9 +1,9 @@
 import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
 import { posts, goToPage, user } from "../index.js";
-import { toggleLike } from "../api.js";
-import { formatDistanceToNow } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { likePost, dislikePost } from "../api.js";
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 export function renderPostsPageComponent({ appEl }) {
 	console.log('Актуальный список постов:', posts)
@@ -76,30 +76,41 @@ export function renderPostsPageComponent({ appEl }) {
   document.querySelectorAll('.like-button').forEach(button => {
     button.addEventListener('click', function () {
       const postId = this.dataset.postId
-      const post = posts.find(post => post.id === postId)
-      const isLiked = post.likes.some(like => like.userId === user.id)
+      const token = `Bearer ${user.token}`
+      const likesTextElement = this.nextElementSibling
 
-      toggleLike({ postId, token: `Bearer ${user.token}`, isLiked: !isLiked })
-				.then(() => {
-					if (isLiked) {
-						post.likes = post.likes.filter(like => like.userId !== user.id)
-					} else {
-						post.likes.push({ userId: user.id, name: user.name })
-					}
-
-					  let likesText = post.likes.map(like => like.name).join(', ')
-					  if (likesText === '') likesText = '0'
-
-					  const likesTextElement = this.closest('.post-likes').querySelector(
-					    '.post-likes-text strong'
-					  )
-					  likesTextElement.textContent = `${likesText}`
-					})
-				.catch(error => {
-					console.error('Ошибка при изменении статуса лайка: ', error)
-				})
+      if (this.classList.contains('liked')) {
+        dislikePost({ postId, token }).then(data => {
+          this.classList.remove('liked')
+          updateLikesText(
+            likesTextElement,
+            data.post.likes.length,
+            data.post.likes[0]?.name
+          )
+        })
+      } else {
+        likePost({ postId, token }).then(data => {
+          this.classList.add('liked')
+          updateLikesText(
+            likesTextElement,
+            data.post.likes.length,
+            data.post.likes[0]?.name
+          )
+        })
+      }
     })
   })
+
+  function updateLikesText(element, likesCount, firstLikerName) {
+    let likesText = '0'
+    if (likesCount > 0) {
+      likesText = `${firstLikerName}`
+      if (likesCount > 1) {
+        likesText += ` и еще ${likesCount - 1}`
+      }
+    }
+    element.innerHTML = `Нравится: <strong>${likesText}</strong>`
+  }
 
 }
 
@@ -167,28 +178,40 @@ export function renderUserPostsPageComponent({ appEl, userPosts }) {
   document.querySelectorAll('.like-button').forEach(button => {
 		button.addEventListener('click', function () {
 			const postId = this.dataset.postId
-			const post = posts.find(post => post.id === postId)
-			const isLiked = post.likes.some(like => like.userId === user.id)
+			const token = `Bearer ${user.token}`
+			const likesTextElement = this.nextElementSibling
 
-			toggleLike({ postId, token: `Bearer ${user.token}`, isLiked: !isLiked })
-				.then(() => {
-					if (isLiked) {
-						post.likes = post.likes.filter(like => like.userId !== user.id)
-					} else {
-						post.likes.push({ userId: user.id, name: user.name })
-					}
-
-					let likesText = post.likes.map(like => like.name).join(', ')
-					if (likesText === '') likesText = '0'
-
-					const likesTextElement = this.closest('.post-likes').querySelector(
-						'.post-likes-text strong'
+			if (this.classList.contains('liked')) {
+				dislikePost({ postId, token }).then(data => {
+					this.classList.remove('liked')
+					updateLikesText(
+						likesTextElement,
+						data.post.likes.length,
+						data.post.likes[0]?.name
 					)
-					likesTextElement.textContent = `${likesText}`
 				})
-				.catch(error => {
-					console.error('Ошибка при изменении статуса лайка: ', error)
+			} else {
+				likePost({ postId, token }).then(data => {
+					this.classList.add('liked')
+					updateLikesText(
+						likesTextElement,
+						data.post.likes.length,
+						data.post.likes[0]?.name
+					)
 				})
+			}
 		})
 	})
+
+	function updateLikesText(element, likesCount, firstLikerName) {
+		let likesText = '0'
+		if (likesCount > 0) {
+			likesText = `${firstLikerName}`
+			if (likesCount > 1) {
+				likesText += ` и еще ${likesCount - 1}`
+			}
+		}
+		element.innerHTML = `Нравится: <strong>${likesText}</strong>`
+	}
+
 }

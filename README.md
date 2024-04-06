@@ -12,4 +12,4 @@ https://webdev-cw-instapro-indol.vercel.app/
 
 ## Фактически затраченное время
 
-YYYY часов
+46 часов
