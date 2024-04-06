@@ -1,70 +1,56 @@
-// export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
-// 	const render = () => {
-// 		const appHtml = `
-//       <div class="page-container">
-//         <div class="header-container"></div>
-//         <h1>Добавление нового поста</h1>
-//         <form id="add-post-form">
-//           <input type="text" id="description" placeholder="Описание" required />
-//           <input type="file" id="imageFile" required />
-//           <button type="submit" class="button">Добавить</button>
-//         </form>
-//       </div>
-//     `
+import { uploadImage } from '../api.js'
 
-// 		appEl.innerHTML = appHtml
-
-// 		document
-// 			.getElementById('add-post-form')
-// 			.addEventListener('submit', event => {
-// 				event.preventDefault()
-// 				const description = document.getElementById('description').value
-// 				const imageFile = document.getElementById('imageFile').files[0]
-
-// 				onAddPostClick({
-// 					description,
-// 					imageFile,
-// 				})
-// 			})
-// 	}
-// 	render()
-// }
-
-export function renderAddPostPageComponent({
-	appEl,
-	onAddPostClick,
-	uploadImage,
-}) {
+export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
 	const render = () => {
 		const appHtml = `
-    <div class="page-container">
-      <div class="header-container"></div>
-      <div>Страница добавления поста</div>
-      <input type="text" id="description-input" placeholder="Описание" />
-      <input type="file" id="image-input" />
-      <button class="button" id="add-button">Добавить</button>
-    </div>
+      <div class="page-container">
+        <div class="header-container"></div>
+        <h3 class="form-title">Страница добавления поста</h3>
+        <form class="form-inputs" id="add-post-form">
+          <input class="file-upload-label secondary-button" type="file" id="image-input" accept="image/*" required>
+          <input class="input" type="text" id="description-input" placeholder="Описание поста" required>
+          <button type="submit" class="button">Добавить</button>
+        </form>
+      </div>
     `
-
 		appEl.innerHTML = appHtml
 
-		document.getElementById('add-button').addEventListener('click', () => {
-			const description = document.getElementById('description-input').value
-			const imageFile = document.getElementById('image-input').files[0]
+		document
+			.getElementById('add-post-form')
+			.addEventListener('submit', function (event) {
+				event.preventDefault()
 
-			if (!description || !imageFile) {
-				alert('Необходимо добавить описание и выбрать изображение.')
-				return
-			}
+				const description = document.getElementById('description-input').value
+				const imageFile = document.getElementById('image-input').files[0]
 
-			uploadImage(imageFile)
-				.then(imageUrl => {
-					onAddPostClick({ description, imageUrl })
-				})
-				.catch(error => {
-					console.error('Ошибка при загрузке изображения: ', error)
-				})
-		})
+				if (!description || !imageFile) {
+					alert('Необходимо заполнить описание и выбрать изображение.')
+					return
+				}
+
+				uploadImage({ file: imageFile })
+					.then(response => {
+						if (response.fileUrl) {
+							onAddPostClick({
+								description,
+								imageUrl: response.fileUrl,
+							})
+								.then(() => {
+									alert('Пост успешно добавлен!')
+									document.getElementById('description-input').value = ''
+									document.getElementById('image-input').value = ''
+								})
+								.catch(error => {
+									console.error('Ошибка при добавлении поста: ', error)
+								})
+						} else {
+							console.error('Ошибка при загрузке изображения.')
+						}
+					})
+					.catch(error => {
+						console.error('Ошибка при загрузке изображения: ', error)
+					})
+			})
 	}
 
 	render()

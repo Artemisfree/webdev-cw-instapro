@@ -1,4 +1,4 @@
-import { getPosts, addPost, getUserPosts, uploadImage } from './api.js'
+import { getPosts, addPost, getUserPosts } from './api.js'
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -74,7 +74,7 @@ export const goToPage = (newPage, data) => {
 				.then(userPosts => {
 					page = USER_POSTS_PAGE
 					posts = userPosts
-					renderApp({ userPosts })
+					renderApp()
 				})
 				.catch(error => {
 					console.error(error)
@@ -118,27 +118,20 @@ const renderApp = () => {
   if (page === ADD_POSTS_PAGE) {
 		return renderAddPostPageComponent({
 			appEl,
-			onAddPostClick({ description, imageFile }) {
-				goToPage(LOADING_PAGE)
-				addPost({
-					token: getToken(),
-					description,
-					imageFile,
-				})
-					.then(() => {
-						return getPosts({ token: getToken() })
-					})
-					.then(newPosts => {
-						posts = newPosts
-						console.log('Добавляю пост...', { description, imageUrl })
-						goToPage(POSTS_PAGE)
-					})
-					.catch(error => {
-						console.error(error)
-						goToPage(POSTS_PAGE)
-					})
+			onAddPostClick({ description, imageUrl }) {
+				console.log('Добавляю пост...', { description, imageUrl })
+
+        const token = `Bearer ${user.token}`
+
+        addPost({ description, imageUrl, token })
+          .then(() => {
+            console.log('Пост успешно добавлен.')
+            goToPage(POSTS_PAGE)
+          })
+          .catch(error => {
+            console.error('Ошибка при добавлении поста: ', error)
+          })
 			},
-			uploadImage,
 		})
 	}
 
