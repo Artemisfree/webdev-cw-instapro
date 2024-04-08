@@ -7,27 +7,23 @@ export function renderUploadImageComponent({ element, onImageUrlChange }) {
     element.innerHTML = `
   <div class="upload=image">
       ${
-        imageUrl
-          ? `
+				imageUrl
+					? `
           <div class="file-upload-image-conrainer">
             <img class="file-upload-image" src="${imageUrl}">
             <button class="file-upload-remove-button button">Заменить фото</button>
           </div>
           `
-          : `
+					: `
             <label class="file-upload-label secondary-button">
-                <input
-                  type="file"
-                  class="file-upload-input"
-                  style="display:none"
-                />
+                <input type="file" class="file-upload-input" style="display:none"/>
                 Выберите фото
             </label>
           
       `
-      }
+			}
   </div>
-`;
+`
 
     const fileInputElement = element.querySelector(".file-upload-input");
 

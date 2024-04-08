@@ -14,6 +14,7 @@ import {
   getUserFromLocalStorage,
   removeUserFromLocalStorage,
   saveUserToLocalStorage,
+  protector,
 } from "./helpers.js";
 
 
@@ -122,15 +123,16 @@ const renderApp = () => {
 				console.log('Добавляю пост...', { description, imageUrl })
 
         const token = `Bearer ${user.token}`
+        description = protector(description)
 
         addPost({ description, imageUrl, token })
-          .then(() => {
-            console.log('Пост успешно добавлен.')
-            goToPage(POSTS_PAGE)
-          })
-          .catch(error => {
-            console.error('Ошибка при добавлении поста: ', error)
-          })
+					.then(() => {
+						console.log('Пост успешно добавлен.')
+						goToPage(POSTS_PAGE)
+					})
+					.catch(error => {
+						console.error('Ошибка при добавлении поста: ', error)
+					})
 			},
 		})
 	}

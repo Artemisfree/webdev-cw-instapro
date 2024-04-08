@@ -683,6 +683,7 @@ const renderApp = ()=>{
                 imageUrl
             });
             const token = `Bearer ${user.token}`;
+            description = (0, _helpersJs.protector)(description);
             (0, _apiJs.addPost)({
                 description,
                 imageUrl,
@@ -868,18 +869,26 @@ function renderAddPostPageComponent({ appEl, onAddPostClick }) {
         const appHtml = `
       <div class="page-container">
         <div class="header-container"></div>
-        <h3 class="form-title">\u{421}\u{442}\u{440}\u{430}\u{43D}\u{438}\u{446}\u{430} \u{434}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{44F} \u{43F}\u{43E}\u{441}\u{442}\u{430}</h3>
-        <form class="form-inputs" id="add-post-form">
-          <input class="file-upload-label secondary-button" type="file" id="image-input" accept="image/*" required>
-          <input class="input" type="text" id="description-input" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435} \u{43F}\u{43E}\u{441}\u{442}\u{430}" required>
-          <button type="submit" class="button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
-        </form>
+		<div class="form">
+			<h3 class="form-title">\u{421}\u{442}\u{440}\u{430}\u{43D}\u{438}\u{446}\u{430} \u{434}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{44F} \u{43F}\u{43E}\u{441}\u{442}\u{430}</h3>
+			<div class="form-inputs" id="add-post-form">
+				<div class="upload-image-container">
+					<div class="upload=image">
+						<label class="file-upload-label secondary-button">\u{412}\u{44B}\u{431}\u{435}\u{440}\u{438}\u{442}\u{435} \u{444}\u{43E}\u{442}\u{43E}
+							<input type="file" class="file-upload-input" style="display:none" id="image-input" accept="image/*" required>
+						</label>
+					</div>
+				</div>
+				<input class="input" type="text" id="description-input" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435} \u{43F}\u{43E}\u{441}\u{442}\u{430}" required>
+				<button type="submit" class="button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
+			</div>
+		</div>
       </div>
     `;
         appEl.innerHTML = appHtml;
         document.getElementById("add-post-form").addEventListener("submit", function(event) {
             event.preventDefault();
-            const description = document.getElementById("description-input").value;
+            const description = protector(document.getElementById("description-input").value);
             const imageFile = document.getElementById("image-input").files[0];
             if (!description || !imageFile) {
                 alert("\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0437\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0438 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435.");
@@ -912,6 +921,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAuthPageComponent", ()=>renderAuthPageComponent);
 var _apiJs = require("../api.js");
+var _helpersJs = require("../helpers.js");
 var _headerComponentJs = require("./header-component.js");
 var _uploadImageComponentJs = require("./upload-image-component.js");
 function renderAuthPageComponent({ appEl, setUser }) {
@@ -991,9 +1001,9 @@ function renderAuthPageComponent({ appEl, setUser }) {
                     setError(error.message);
                 });
             } else {
-                const login = document.getElementById("login-input").value;
-                const name = document.getElementById("name-input").value;
-                const password = document.getElementById("password-input").value;
+                const login = (0, _helpersJs.protector)(document.getElementById("login-input").value);
+                const name = (0, _helpersJs.protector)(document.getElementById("name-input").value);
+                const password = (0, _helpersJs.protector)(document.getElementById("password-input").value);
                 if (!name) {
                     alert("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0438\u043C\u044F");
                     return;
@@ -1031,7 +1041,44 @@ function renderAuthPageComponent({ appEl, setUser }) {
     renderForm();
 }
 
-},{"../api.js":"eqUwj","./header-component.js":"7lHeM","./upload-image-component.js":"5S9hZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7lHeM":[function(require,module,exports) {
+},{"../api.js":"eqUwj","../helpers.js":"9Ty9u","./header-component.js":"7lHeM","./upload-image-component.js":"5S9hZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Ty9u":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "saveUserToLocalStorage", ()=>saveUserToLocalStorage);
+parcelHelpers.export(exports, "getUserFromLocalStorage", ()=>getUserFromLocalStorage);
+parcelHelpers.export(exports, "removeUserFromLocalStorage", ()=>removeUserFromLocalStorage);
+parcelHelpers.export(exports, "protector", ()=>protector);
+function saveUserToLocalStorage(user) {
+    window.localStorage.setItem("user", JSON.stringify(user));
+}
+function getUserFromLocalStorage(user) {
+    try {
+        return JSON.parse(window.localStorage.getItem("user"));
+    } catch (error) {
+        return null;
+    }
+}
+function removeUserFromLocalStorage(user) {
+    window.localStorage.removeItem("user");
+}
+function protector(str) {
+    return str.replace(/[&<>"']/g, function(match) {
+        switch(match){
+            case "&":
+                return "&amp;";
+            case "<":
+                return "&lt;";
+            case ">":
+                return "&gt;";
+            case '"':
+                return "&quot;";
+            case "'":
+                return "&#39;";
+        }
+    });
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7lHeM":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderHeaderComponent", ()=>renderHeaderComponent);
@@ -1091,11 +1138,7 @@ function renderUploadImageComponent({ element, onImageUrlChange }) {
           </div>
           ` : `
             <label class="file-upload-label secondary-button">
-                <input
-                  type="file"
-                  class="file-upload-input"
-                  style="display:none"
-                />
+                <input type="file" class="file-upload-input" style="display:none"/>
                 \u{412}\u{44B}\u{431}\u{435}\u{440}\u{438}\u{442}\u{435} \u{444}\u{43E}\u{442}\u{43E}
             </label>
           
@@ -1138,6 +1181,14 @@ var _indexJs = require("../index.js");
 var _apiJs = require("../api.js");
 var _dateFns = require("date-fns");
 var _locale = require("date-fns/locale");
+function getLikeSvg(isLiked) {
+    if (isLiked) return `<svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21.4677 3.82098C21.1264 3.07326 20.6342 2.39568 20.0187 1.82618C19.4028 1.25497 18.6766 0.801048 17.8796 0.489081C17.0532 0.164306 16.1668 -0.00193165 15.2719 1.69338e-05C14.0164 1.69338e-05 12.7915 0.325256 11.727 0.939598C11.4724 1.08656 11.2305 1.24797 11.0013 1.42384C10.7721 1.24797 10.5301 1.08656 10.2755 0.939598C9.21101 0.325256 7.9861 1.69338e-05 6.73063 1.69338e-05C5.82659 1.69338e-05 4.95057 0.163841 4.12293 0.489081C3.3233 0.802275 2.60261 1.25279 1.98379 1.82618C1.36751 2.39504 0.875206 3.07278 0.534783 3.82098C0.180808 4.59914 0 5.42549 0 6.27594C0 7.07819 0.173168 7.91418 0.516957 8.76462C0.804722 9.47533 1.21727 10.2125 1.74441 10.957C2.57969 12.1351 3.7282 13.3637 5.15429 14.6093C7.51753 16.674 9.85784 18.1002 9.95716 18.158L10.5607 18.5242C10.8281 18.6856 11.1719 18.6856 11.4393 18.5242L12.0428 18.158C12.1421 18.0978 14.4799 16.674 16.8457 14.6093C18.2718 13.3637 19.4203 12.1351 20.2556 10.957C20.7827 10.2125 21.1978 9.47533 21.483 8.76462C21.8268 7.91418 22 7.07819 22 6.27594C22.0025 5.42549 21.8217 4.59914 21.4677 3.82098ZM11.0013 16.6186C11.0013 16.6186 1.93541 11.1232 1.93541 6.27594C1.93541 3.82098 4.08218 1.831 6.73063 1.831C8.59219 1.831 10.2067 2.81394 11.0013 4.24981C11.7958 2.81394 13.4103 1.831 15.2719 1.831C17.9203 1.831 20.0671 3.82098 20.0671 6.27594C20.0671 11.1232 11.0013 16.6186 11.0013 16.6186Z" fill="red"/>
+            </svg>`;
+    else return `<svg width="22" height="19" viewBox="0 0 22 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21.4677 3.82098C21.1264 3.07326 20.6342 2.39568 20.0187 1.82618C19.4028 1.25497 18.6766 0.801048 17.8796 0.489081C17.0532 0.164306 16.1668 -0.00193165 15.2719 1.69338e-05C14.0164 1.69338e-05 12.7915 0.325256 11.727 0.939598C11.4724 1.08656 11.2305 1.24797 11.0013 1.42384C10.7721 1.24797 10.5301 1.08656 10.2755 0.939598C9.21101 0.325256 7.9861 1.69338e-05 6.73063 1.69338e-05C5.82659 1.69338e-05 4.95057 0.163841 4.12293 0.489081C3.3233 0.802275 2.60261 1.25279 1.98379 1.82618C1.36751 2.39504 0.875206 3.07278 0.534783 3.82098C0.180808 4.59914 0 5.42549 0 6.27594C0 7.07819 0.173168 7.91418 0.516957 8.76462C0.804722 9.47533 1.21727 10.2125 1.74441 10.957C2.57969 12.1351 3.7282 13.3637 5.15429 14.6093C7.51753 16.674 9.85784 18.1002 9.95716 18.158L10.5607 18.5242C10.8281 18.6856 11.1719 18.6856 11.4393 18.5242L12.0428 18.158C12.1421 18.0978 14.4799 16.674 16.8457 14.6093C18.2718 13.3637 19.4203 12.1351 20.2556 10.957C20.7827 10.2125 21.1978 9.47533 21.483 8.76462C21.8268 7.91418 22 7.07819 22 6.27594C22.0025 5.42549 21.8217 4.59914 21.4677 3.82098ZM11.0013 16.6186C11.0013 16.6186 1.93541 11.1232 1.93541 6.27594C1.93541 3.82098 4.08218 1.831 6.73063 1.831C8.59219 1.831 10.2067 2.81394 11.0013 4.24981C11.7958 2.81394 13.4103 1.831 15.2719 1.831C17.9203 1.831 20.0671 3.82098 20.0671 6.27594C20.0671 11.1232 11.0013 16.6186 11.0013 16.6186Z" fill="black"/>
+            </svg>`;
+}
 function renderPostsPageComponent({ appEl }) {
     console.log("\u0410\u043A\u0442\u0443\u0430\u043B\u044C\u043D\u044B\u0439 \u0441\u043F\u0438\u0441\u043E\u043A \u043F\u043E\u0441\u0442\u043E\u0432:", (0, _indexJs.posts));
     const postsHtml = (0, _indexJs.posts).map((post)=>{
@@ -1157,7 +1208,7 @@ function renderPostsPageComponent({ appEl }) {
       </div>
       <div class="post-likes">
         <button data-post-id="${post.id}" class="like-button">
-          <img src="./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg">
+          ${getLikeSvg(post.isLiked)}
         </button>
         <p class="post-likes-text">
           \u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong>
@@ -1199,6 +1250,8 @@ function renderPostsPageComponent({ appEl }) {
                 token
             }).then((data)=>{
                 this.classList.remove("liked");
+                const isLiked = this.classList.contains("liked");
+                this.innerHTML = getLikeSvg(isLiked);
                 updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
             });
             else (0, _apiJs.likePost)({
@@ -1206,6 +1259,8 @@ function renderPostsPageComponent({ appEl }) {
                 token
             }).then((data)=>{
                 this.classList.add("liked");
+                const isLiked = this.classList.contains("liked");
+                this.innerHTML = getLikeSvg(isLiked);
                 updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
             });
         });
@@ -1238,7 +1293,7 @@ function renderUserPostsPageComponent({ appEl, userPosts }) {
         </div>
         <div class="post-likes">
           <button data-post-id="${post.id}" class="like-button">
-            <img src="./assets/images/${post.isLiked ? "like-active" : "like-not-active"}.svg">
+            ${getLikeSvg(post.isLiked)}
           </button>
           <p class="post-likes-text">
             \u{41D}\u{440}\u{430}\u{432}\u{438}\u{442}\u{441}\u{44F}: <strong>${likesText}</strong>
@@ -1275,6 +1330,8 @@ function renderUserPostsPageComponent({ appEl, userPosts }) {
                 token
             }).then((data)=>{
                 this.classList.remove("liked");
+                const isLiked = this.classList.contains("liked");
+                this.innerHTML = getLikeSvg(isLiked);
                 updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
             });
             else (0, _apiJs.likePost)({
@@ -1282,6 +1339,8 @@ function renderUserPostsPageComponent({ appEl, userPosts }) {
                 token
             }).then((data)=>{
                 this.classList.add("liked");
+                const isLiked = this.classList.contains("liked");
+                this.innerHTML = getLikeSvg(isLiked);
                 updateLikesText(likesTextElement, data.post.likes.length, data.post.likes[0]?.name);
             });
         });
@@ -68691,26 +68750,6 @@ function renderLoadingPageComponent({ appEl, user, goToPage }) {
     });
 }
 
-},{"./header-component.js":"7lHeM","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Ty9u":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "saveUserToLocalStorage", ()=>saveUserToLocalStorage);
-parcelHelpers.export(exports, "getUserFromLocalStorage", ()=>getUserFromLocalStorage);
-parcelHelpers.export(exports, "removeUserFromLocalStorage", ()=>removeUserFromLocalStorage);
-function saveUserToLocalStorage(user) {
-    window.localStorage.setItem("user", JSON.stringify(user));
-}
-function getUserFromLocalStorage(user) {
-    try {
-        return JSON.parse(window.localStorage.getItem("user"));
-    } catch (error) {
-        return null;
-    }
-}
-function removeUserFromLocalStorage(user) {
-    window.localStorage.removeItem("user");
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["km5uZ","bB7Pu"], "bB7Pu", "parcelRequireefa5")
+},{"./header-component.js":"7lHeM","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["km5uZ","bB7Pu"], "bB7Pu", "parcelRequireefa5")
 
 //# sourceMappingURL=index.3d214d75.js.map
