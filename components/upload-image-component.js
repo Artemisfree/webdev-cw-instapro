@@ -5,7 +5,7 @@ export function renderUploadImageComponent({ element, onImageUrlChange }) {
 
   const render = () => {
     element.innerHTML = `
-  <div class="upload=image">
+  <div class="upload-image">
       ${
 				imageUrl
 					? `
