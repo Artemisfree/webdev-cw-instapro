@@ -68,6 +68,9 @@ export function uploadImage({ file }) {
 		body: data,
 	})
 		.then(response => {
+      if (!response.ok) {
+				throw new Error('Ошибка при загрузке изображения')
+			}
 			return response.json();
 		})
 		.then(data => {

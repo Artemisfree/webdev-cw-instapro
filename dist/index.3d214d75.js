@@ -772,6 +772,7 @@ function uploadImage({ file }) {
         method: "POST",
         body: data
     }).then((response)=>{
+        if (!response.ok) throw new Error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0435 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F");
         return response.json();
     }).then((data)=>{
         console.log(data.fileUrl);
@@ -864,6 +865,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAddPostPageComponent", ()=>renderAddPostPageComponent);
 var _apiJs = require("../api.js");
+var _headerComponentJs = require("./header-component.js");
+var _helpersJs = require("../helpers.js");
 function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     const render = ()=>{
         const appHtml = `
@@ -871,9 +874,9 @@ function renderAddPostPageComponent({ appEl, onAddPostClick }) {
         <div class="header-container"></div>
 		<div class="form">
 			<h3 class="form-title">\u{421}\u{442}\u{440}\u{430}\u{43D}\u{438}\u{446}\u{430} \u{434}\u{43E}\u{431}\u{430}\u{432}\u{43B}\u{435}\u{43D}\u{438}\u{44F} \u{43F}\u{43E}\u{441}\u{442}\u{430}</h3>
-			<div class="form-inputs" id="add-post-form">
+			<form class="form-inputs" id="add-post-form">
 				<div class="upload-image-container">
-					<div class="upload=image">
+					<div class="upload-image">
 						<label class="file-upload-label secondary-button">\u{412}\u{44B}\u{431}\u{435}\u{440}\u{438}\u{442}\u{435} \u{444}\u{43E}\u{442}\u{43E}
 							<input type="file" class="file-upload-input" style="display:none" id="image-input" accept="image/*" required>
 						</label>
@@ -881,14 +884,17 @@ function renderAddPostPageComponent({ appEl, onAddPostClick }) {
 				</div>
 				<input class="input" type="text" id="description-input" placeholder="\u{41E}\u{43F}\u{438}\u{441}\u{430}\u{43D}\u{438}\u{435} \u{43F}\u{43E}\u{441}\u{442}\u{430}" required>
 				<button type="submit" class="button">\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C}</button>
-			</div>
+			</form>
 		</div>
       </div>
     `;
         appEl.innerHTML = appHtml;
+        (0, _headerComponentJs.renderHeaderComponent)({
+            element: document.querySelector(".header-container")
+        });
         document.getElementById("add-post-form").addEventListener("submit", function(event) {
             event.preventDefault();
-            const description = protector(document.getElementById("description-input").value);
+            const description = (0, _helpersJs.protector)(document.getElementById("description-input").value);
             const imageFile = document.getElementById("image-input").files[0];
             if (!description || !imageFile) {
                 alert("\u041D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E \u0437\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0438 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435.");
@@ -916,7 +922,87 @@ function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     render();
 }
 
-},{"../api.js":"eqUwj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hHvvy":[function(require,module,exports) {
+},{"../api.js":"eqUwj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./header-component.js":"7lHeM","../helpers.js":"9Ty9u"}],"7lHeM":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "renderHeaderComponent", ()=>renderHeaderComponent);
+var _indexJs = require("../index.js");
+var _routesJs = require("../routes.js");
+function renderHeaderComponent({ element }) {
+    element.innerHTML = `
+  <div class="page-header">
+      <h1 class="logo">instapro</h1>
+      <button class="header-button add-or-login-button">
+      ${(0, _indexJs.user) ? `<div title="\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C} \u{43F}\u{43E}\u{441}\u{442}" class="add-post-sign"></div>` : "\u0412\u043E\u0439\u0442\u0438"}
+      </button>
+      ${(0, _indexJs.user) ? `<button title="${(0, _indexJs.user).name}" class="header-button logout-button">\u{412}\u{44B}\u{439}\u{442}\u{438}</button>` : ""}  
+  </div>
+  
+`;
+    element.querySelector(".add-or-login-button").addEventListener("click", ()=>{
+        if (0, _indexJs.user) (0, _indexJs.goToPage)((0, _routesJs.ADD_POSTS_PAGE));
+        else (0, _indexJs.goToPage)((0, _routesJs.AUTH_PAGE));
+    });
+    element.querySelector(".logo").addEventListener("click", ()=>{
+        (0, _indexJs.goToPage)((0, _routesJs.POSTS_PAGE));
+    });
+    element.querySelector(".logout-button")?.addEventListener("click", (0, _indexJs.logout));
+    return element;
+}
+
+},{"../index.js":"bB7Pu","../routes.js":"biSHN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"biSHN":[function(require,module,exports) {
+// Файл со списком страниц приложения
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "POSTS_PAGE", ()=>POSTS_PAGE);
+parcelHelpers.export(exports, "USER_POSTS_PAGE", ()=>USER_POSTS_PAGE);
+parcelHelpers.export(exports, "AUTH_PAGE", ()=>AUTH_PAGE);
+parcelHelpers.export(exports, "ADD_POSTS_PAGE", ()=>ADD_POSTS_PAGE);
+parcelHelpers.export(exports, "LOADING_PAGE", ()=>LOADING_PAGE);
+const POSTS_PAGE = "posts";
+const USER_POSTS_PAGE = "user-posts";
+const AUTH_PAGE = "auth";
+const ADD_POSTS_PAGE = "add-post";
+const LOADING_PAGE = "loading";
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Ty9u":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "saveUserToLocalStorage", ()=>saveUserToLocalStorage);
+parcelHelpers.export(exports, "getUserFromLocalStorage", ()=>getUserFromLocalStorage);
+parcelHelpers.export(exports, "removeUserFromLocalStorage", ()=>removeUserFromLocalStorage);
+parcelHelpers.export(exports, "protector", ()=>protector);
+function saveUserToLocalStorage(user) {
+    window.localStorage.setItem("user", JSON.stringify(user));
+}
+function getUserFromLocalStorage(user) {
+    try {
+        return JSON.parse(window.localStorage.getItem("user"));
+    } catch (error) {
+        return null;
+    }
+}
+function removeUserFromLocalStorage(user) {
+    window.localStorage.removeItem("user");
+}
+function protector(str) {
+    return str.replace(/[&<>"']/g, function(match) {
+        switch(match){
+            case "&":
+                return "&amp;";
+            case "<":
+                return "&lt;";
+            case ">":
+                return "&gt;";
+            case '"':
+                return "&quot;";
+            case "'":
+                return "&#39;";
+        }
+    });
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hHvvy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderAuthPageComponent", ()=>renderAuthPageComponent);
@@ -1041,87 +1127,7 @@ function renderAuthPageComponent({ appEl, setUser }) {
     renderForm();
 }
 
-},{"../api.js":"eqUwj","../helpers.js":"9Ty9u","./header-component.js":"7lHeM","./upload-image-component.js":"5S9hZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Ty9u":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "saveUserToLocalStorage", ()=>saveUserToLocalStorage);
-parcelHelpers.export(exports, "getUserFromLocalStorage", ()=>getUserFromLocalStorage);
-parcelHelpers.export(exports, "removeUserFromLocalStorage", ()=>removeUserFromLocalStorage);
-parcelHelpers.export(exports, "protector", ()=>protector);
-function saveUserToLocalStorage(user) {
-    window.localStorage.setItem("user", JSON.stringify(user));
-}
-function getUserFromLocalStorage(user) {
-    try {
-        return JSON.parse(window.localStorage.getItem("user"));
-    } catch (error) {
-        return null;
-    }
-}
-function removeUserFromLocalStorage(user) {
-    window.localStorage.removeItem("user");
-}
-function protector(str) {
-    return str.replace(/[&<>"']/g, function(match) {
-        switch(match){
-            case "&":
-                return "&amp;";
-            case "<":
-                return "&lt;";
-            case ">":
-                return "&gt;";
-            case '"':
-                return "&quot;";
-            case "'":
-                return "&#39;";
-        }
-    });
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7lHeM":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "renderHeaderComponent", ()=>renderHeaderComponent);
-var _indexJs = require("../index.js");
-var _routesJs = require("../routes.js");
-function renderHeaderComponent({ element }) {
-    element.innerHTML = `
-  <div class="page-header">
-      <h1 class="logo">instapro</h1>
-      <button class="header-button add-or-login-button">
-      ${(0, _indexJs.user) ? `<div title="\u{414}\u{43E}\u{431}\u{430}\u{432}\u{438}\u{442}\u{44C} \u{43F}\u{43E}\u{441}\u{442}" class="add-post-sign"></div>` : "\u0412\u043E\u0439\u0442\u0438"}
-      </button>
-      ${(0, _indexJs.user) ? `<button title="${(0, _indexJs.user).name}" class="header-button logout-button">\u{412}\u{44B}\u{439}\u{442}\u{438}</button>` : ""}  
-  </div>
-  
-`;
-    element.querySelector(".add-or-login-button").addEventListener("click", ()=>{
-        if (0, _indexJs.user) (0, _indexJs.goToPage)((0, _routesJs.ADD_POSTS_PAGE));
-        else (0, _indexJs.goToPage)((0, _routesJs.AUTH_PAGE));
-    });
-    element.querySelector(".logo").addEventListener("click", ()=>{
-        (0, _indexJs.goToPage)((0, _routesJs.POSTS_PAGE));
-    });
-    element.querySelector(".logout-button")?.addEventListener("click", (0, _indexJs.logout));
-    return element;
-}
-
-},{"../index.js":"bB7Pu","../routes.js":"biSHN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"biSHN":[function(require,module,exports) {
-// Файл со списком страниц приложения
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "POSTS_PAGE", ()=>POSTS_PAGE);
-parcelHelpers.export(exports, "USER_POSTS_PAGE", ()=>USER_POSTS_PAGE);
-parcelHelpers.export(exports, "AUTH_PAGE", ()=>AUTH_PAGE);
-parcelHelpers.export(exports, "ADD_POSTS_PAGE", ()=>ADD_POSTS_PAGE);
-parcelHelpers.export(exports, "LOADING_PAGE", ()=>LOADING_PAGE);
-const POSTS_PAGE = "posts";
-const USER_POSTS_PAGE = "user-posts";
-const AUTH_PAGE = "auth";
-const ADD_POSTS_PAGE = "add-post";
-const LOADING_PAGE = "loading";
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5S9hZ":[function(require,module,exports) {
+},{"../api.js":"eqUwj","../helpers.js":"9Ty9u","./header-component.js":"7lHeM","./upload-image-component.js":"5S9hZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5S9hZ":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderUploadImageComponent", ()=>renderUploadImageComponent);
@@ -1130,7 +1136,7 @@ function renderUploadImageComponent({ element, onImageUrlChange }) {
     let imageUrl = "";
     const render = ()=>{
         element.innerHTML = `
-  <div class="upload=image">
+  <div class="upload-image">
       ${imageUrl ? `
           <div class="file-upload-image-conrainer">
             <img class="file-upload-image" src="${imageUrl}">

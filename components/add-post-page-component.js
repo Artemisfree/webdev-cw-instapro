@@ -1,4 +1,7 @@
 import { uploadImage } from '../api.js'
+import { renderHeaderComponent } from './header-component.js'
+import { protector } from '../helpers.js'
+
 
 export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
 	const render = () => {
@@ -7,9 +10,9 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
         <div class="header-container"></div>
 		<div class="form">
 			<h3 class="form-title">Страница добавления поста</h3>
-			<div class="form-inputs" id="add-post-form">
+			<form class="form-inputs" id="add-post-form">
 				<div class="upload-image-container">
-					<div class="upload=image">
+					<div class="upload-image">
 						<label class="file-upload-label secondary-button">Выберите фото
 							<input type="file" class="file-upload-input" style="display:none" id="image-input" accept="image/*" required>
 						</label>
@@ -17,11 +20,15 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
 				</div>
 				<input class="input" type="text" id="description-input" placeholder="Описание поста" required>
 				<button type="submit" class="button">Добавить</button>
-			</div>
+			</form>
 		</div>
       </div>
     `
 		appEl.innerHTML = appHtml
+
+		renderHeaderComponent({
+			element: document.querySelector('.header-container'),
+		});
 
 		document
 			.getElementById('add-post-form')
